@@ -15,7 +15,7 @@ import requests
 from lxml import etree
 from lxml import html
 
-import pydevtools.git_stuff.git_tools as git_tools
+import git_tools.git_tools as git_tools
 
 
 if __name__=='__main__':

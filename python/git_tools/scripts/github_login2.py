@@ -5,7 +5,7 @@ Created on Tue Sep 18 09:39:04 2018
 @author: danaukes
 """
 
-import pydevtools.git_stuff.git_tools as git_tools
+import git_tools.git_tools as git_tools
 
 if __name__ == "__main__":
     

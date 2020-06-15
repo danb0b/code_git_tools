@@ -6,7 +6,7 @@ Created on Mon Apr 22 16:06:40 2019
 """
 import os
 import yaml
-import pydevtools.git_stuff.git_tools as git_tools
+import git_tools.git_tools as git_tools
 
 if __name__=='__main__':
     exclude = []

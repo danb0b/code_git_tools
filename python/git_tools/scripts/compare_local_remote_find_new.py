@@ -8,7 +8,7 @@ Created on Sat Dec  8 13:36:47 2018
 import yaml
 from git import Repo
 import git
-import pydevtools.git_stuff.git_tools as git_tools
+import git_tools.git_tools as git_tools
     
 if __name__=='__main__':
 
