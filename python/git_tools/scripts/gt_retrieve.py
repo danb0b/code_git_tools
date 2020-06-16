@@ -20,4 +20,5 @@ if __name__=='__main__':
     exclude_remote.append('https://github.com/cdbrauer/VoxelFuse.git')
     exclude_remote.append('https://github.com/cdbrauer/Material-Interface-Generation.git')
     exclude_remote.append('https://github.com/ThomasSugar/hmil.git')
-    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote)
+    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote,user = 'danaukes')
+    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote,user = 'danb0b')    

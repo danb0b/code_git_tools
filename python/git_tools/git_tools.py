@@ -12,7 +12,7 @@ import getpass
 
 from github import Github
 
-def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,repo_path = None,exclude_remote = None):
+def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,repo_path = None,exclude_remote = None,user = None):
     repo_path = repo_path or os.path.join(os.path.abspath(os.path.expanduser('~')),'repositories')
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
         os.mkdir(repo_path)
@@ -20,7 +20,7 @@ def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,rep
     
     gits_local = find_repos(search_path,search_depth,exclude)
     print('local gits: ', gits_local)
-    gits_remote,owners = scan_github()
+    gits_remote,owners = scan_github(user=user)
     print('remote gits: ', gits_remote)
     nonlocal_github_urls=diff(gits_local,gits_remote)
     remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
@@ -29,9 +29,9 @@ def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,rep
 #
     
 #
-def get_all_repos():
+def get_all_repos(user = None):
 
-    user = input('username: ')
+    user = user or input('username: ')
     password = getpass.getpass('Password: ')
 
     g = Github(user, password)
@@ -39,10 +39,10 @@ def get_all_repos():
     all_repos =  list(g.get_user().get_repos())
     return all_repos 
     
-def scan_github():
+def scan_github(user = None):
     all_gits = []
     owners = {}
-    for repo in get_all_repos():
+    for repo in get_all_repos(user):
         all_gits.append(repo.clone_url)
         owners[repo.clone_url]=repo.owner.login
     return all_gits,owners
