@@ -158,30 +158,71 @@ def fetch(git_list):
     
     return git_list2,unmatched,no_path,git_command_error
     
-def check_unmatched(git_list):    
+def check_unmatched(git_list,verbose=True):    
 
-    unmatched = []
     git_command_error = []
-    git_list2 = []
     no_path = []
-
+    missing_local_branches = []
+    missing_remote_branches = []
+    unsynced_branches = []
+    
     ll = len(git_list)
-    for ii,item in enumerate(git_list):
-        print('{0:.0f}/{1:.0f}'.format(ii,ll),item)
+    for ii,repo_path in enumerate(git_list):
+        print('{0:.0f}/{1:.0f}'.format(ii,ll),repo_path)
         try:
-#            print(item)
-            r = Repo(item)
-            b = r.active_branch
-            if b.commit.hexsha != b.tracking_branch().commit.hexsha:
-                unmatched.append(item)            
-            git_list2.append(item)
+            r = Repo(repo_path)
+            
+            remote_branches = []
+            for rr in r.remote().refs:
+                if not rr.name.lower().endswith('/head'):
+                    remote_branches.append(rr)
+            remote_branches_s = set(remote_branches)
+            
+            
+            for branch in r.branches:
+                if branch.tracking_branch() is not None:
+                    if branch.commit.hexsha != branch.tracking_branch().commit.hexsha:
+                        unsynced_branches.append((repo_path,branch.name))
+                else:
+                    missing_remote_branches.append((repo_path,branch.name))
+                
+            b_s = [branch.tracking_branch() for branch in r.branches]
+            b_s = [branch for branch in b_s if branch is not None]
+            b_s = set(b_s)
+            not_local = list(remote_branches_s.difference(b_s))
+            for ref in not_local:
+                missing_local_branches.append((repo_path,ref.name))
             
         except git.NoSuchPathError as e:        
             no_path.append((item,e))
         except git.GitCommandError as e:        
             git_command_error.append((item,e))
     
-    return git_list2,unmatched,no_path,git_command_error   
+    if verbose:
+    
+        print('---------')
+        print('Missing Local Branches:')
+        for item in missing_local_branches:
+            print(item)
+        print('---------')
+        print('Missing Remote Branches:')
+        for item in missing_remote_branches:
+            print(item)
+        print('---------')
+        print('Branches Unsynced:')
+        for item in unsynced_branches:
+            print(item)
+        print('---------')
+        print('No Path:')
+        for item,e in no_path:
+            print(item,e)
+        print('---------')
+        print('Git Command:')
+        for item,e in git_command_error:
+            print(item,e)
+        print('---------')
+    
+    # return git_list2,unmatched,no_path,git_command_error   
 
 if __name__=='__main__':
     r = get_all_repos()
