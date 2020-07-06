@@ -14,7 +14,6 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exclude_local',dest='exclude_local_f',default = None)
     args=parser.parse_args()
-    print(args)
     
     if args.exclude_local_f:
         with open(args.exclude_local_f) as f:

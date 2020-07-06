@@ -16,16 +16,25 @@ from lxml import etree
 from lxml import html
 
 import git_tools.git_tools as git_tools
+import argparse
+import yaml
 
 
 if __name__=='__main__':
    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exclude_local',dest='exclude_local_f',default = None)
+    args=parser.parse_args()
+    
+    if args.exclude_local_f:
+        with open(args.exclude_local_f) as f:
+            exclude = yaml.load(f)
+    else:
+        exclude = None
+
     p1 = os.path.abspath(os.path.expanduser('~'))
     search_depth = 5
-    exclude=[]
-    exclude.append(os.path.join(os.path.abspath(os.path.expanduser('~')),'Dropbox (ASU)\\code_external'))
-    exclude.append(os.path.join(os.path.abspath(os.path.expanduser('~')),'repositories\dormant'))
-    exclude.append(os.path.join(os.path.abspath(os.path.expanduser('~')),'Arizona State University'))
+
     git_list = git_tools.find_repos(p1,search_depth = 5,exclude=exclude)
 
     not_synced = []
@@ -44,7 +53,3 @@ if __name__=='__main__':
                     for item2 in r.untracked_files:
                         os.remove(os.path.join(item,item2))
                     
-#            base = r.merge_base(b,rem)
-#            r.index.merge_tree(b,base=base)
-#            r.index.commit('auto_merge', parent_commits=(b.commit, rem.commit))
-#            b.checkout(force=False)

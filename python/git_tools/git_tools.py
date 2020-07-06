@@ -134,7 +134,7 @@ def check_dirty(git_list):
 
     return git_list2,dirty,no_path
 
-def fetch(git_list):    
+def fetch(git_list,verbose = True):    
 
     unmatched = []
     git_command_error = []
@@ -148,15 +148,27 @@ def fetch(git_list):
             repo = Repo(item)
             
             fetches = repo.remotes[0].fetch()
-            if repo.commit().hexsha != fetches[0].commit.hexsha:
-                unmatched.append(item)
+            # if repo.commit().hexsha != fetches[0].commit.hexsha:
+                # unmatched.append(item)
             git_list2.append(item)
         except git.NoSuchPathError as e:        
             no_path.append((item,e))
         except git.GitCommandError as e:        
             git_command_error.append((item,e))
+            
+    if verbose:
     
-    return git_list2,unmatched,no_path,git_command_error
+        print('---------')
+        print('No Path:')
+        for item,e in no_path:
+            print(item,e)
+        print('---------')
+        print('Git Command:')
+        for item,e in git_command_error:
+            print(item,e)
+        print('---------')
+    
+    return git_list2
     
 def check_unmatched(git_list,verbose=True):    
 
@@ -194,9 +206,9 @@ def check_unmatched(git_list,verbose=True):
                 missing_local_branches.append((repo_path,ref.name))
             
         except git.NoSuchPathError as e:        
-            no_path.append((item,e))
+            no_path.append((repo_path,e))
         except git.GitCommandError as e:        
-            git_command_error.append((item,e))
+            git_command_error.append((repo_path,e))
     
     if verbose:
     
