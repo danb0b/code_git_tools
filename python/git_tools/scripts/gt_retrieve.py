@@ -16,20 +16,20 @@ if __name__=='__main__':
     parser.add_argument('--exclude_local',dest='exclude_local_f',default = None)
     parser.add_argument('--exclude_remote',dest='exclude_remote_f',default = None)
     parser.add_argument('--user',dest='user',default = None)
-    parser.parse_args()
+    args = parser.parse_args()
     
-    if exclude_local_f:
-        with open(exclude_local_f) as f:
+    if args.exclude_local_f:
+        with open(args.exclude_local_f) as f:
             exclude = yaml.load(f)
     else:
         exclude = None
 
-    if exclude_remote_f:
-        with open(exclude_remote_f) as f:
-            exclude_remote = yaml.load
+    if args.exclude_remote_f:
+        with open(args.exclude_remote_f) as f:
+            exclude_remote = yaml.load(f)
     else:
         exclude_remote = None
 
     search_path = os.path.abspath(os.path.expanduser('~'))
 
-    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote,user = 'danb0b')    
+    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote,user = args.user)    
