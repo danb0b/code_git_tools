@@ -20,29 +20,31 @@ def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,rep
     
     gits_local = find_repos(search_path,search_depth,exclude)
     print('local gits: ', gits_local)
-    gits_remote,owners = scan_github(user=user)
+
+    user = user or input('username: ')
+    password = getpass.getpass('Password: ')
+
+    gits_remote,owners = scan_github(user,password)
     print('remote gits: ', gits_remote)
     nonlocal_github_urls=diff(gits_local,gits_remote)
     remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
     print('diff: ', remaining)
-    clone_list(remaining,repo_path,owners)    
+    clone_list(remaining,repo_path,owners,user,password)    
 #
     
 #
-def get_all_repos(user = None):
+def get_all_repos(user,password):
 
-    user = user or input('username: ')
-    password = getpass.getpass('Password: ')
 
     g = Github(user, password)
 
     all_repos =  list(g.get_user().get_repos())
     return all_repos 
     
-def scan_github(user = None):
+def scan_github(user,password):
     all_gits = []
     owners = {}
-    for repo in get_all_repos(user):
+    for repo in get_all_repos(user,password):
         all_gits.append(repo.clone_url)
         owners[repo.clone_url]=repo.owner.login
     return all_gits,owners
@@ -105,7 +107,7 @@ def find_repos(search_path=None,search_depth=5,exclude=None):
                     pass
     return git_list
 
-def clone_list(repo_addresses,full_path,owners):
+def clone_list(repo_addresses,full_path,owners,user,password):
     for url in repo_addresses:
         name=(url.split('/')[-1]).split('.')[0]
     #    name = [item for item in name if item!='']
@@ -114,7 +116,12 @@ def clone_list(repo_addresses,full_path,owners):
         if not (os.path.exists(local_dest) and os.path.isdir(local_dest)):
             os.makedirs(local_dest)
         print('cloning ',url, local_dest)
-        repo = Repo.clone_from(url,local_dest)
+        
+        newurl = url.split('//')
+        newurl = newurl[0]+'//'+user+':'+password+'@'+newurl[1]
+        #print('new url:',newurl)
+
+        repo = Repo.clone_from(newurl,local_dest)
 
 def check_dirty(git_list):    
     dirty = []
