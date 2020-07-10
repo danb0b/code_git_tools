@@ -12,8 +12,6 @@ import git
 import getpass
 
 import requests
-from lxml import etree
-from lxml import html
 
 import git_tools.git_tools as git_tools
 import argparse
