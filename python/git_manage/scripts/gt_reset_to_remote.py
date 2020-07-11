@@ -13,7 +13,7 @@ import getpass
 
 import requests
 
-import git_tools.git_tools as git_tools
+import git_manage.git_tools as git_tools
 import argparse
 import yaml
 

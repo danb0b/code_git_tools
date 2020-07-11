@@ -5,7 +5,7 @@ Created on Mon Apr 22 20:18:03 2019
 @author: danaukes
 """
 import os
-import git_tools.git_tools as git_tools
+import git_manage.git_tools as git_tools
 import argparse
 import yaml
 
@@ -25,6 +25,5 @@ if __name__=='__main__':
     search_depth = 5
 
     git_list = git_tools.find_repos(p1,search_depth = 5,exclude=exclude)
-    git_list = git_tools.fetch(git_list)
     git_tools.check_unmatched(git_list)
 
