@@ -117,12 +117,12 @@ def clone_list(repo_addresses,full_path,owners,user,password):
         local_dest = os.path.normpath(os.path.join(full_path,owner,name))
         if not (os.path.exists(local_dest) and os.path.isdir(local_dest)):
             os.makedirs(local_dest)
-        print('cloning ',url, local_dest)
+        # print('cloning ',url, local_dest)
         
         # newurl = url.split('//')
         # newurl = newurl[0]+'//'+user+':'+password+'@'+newurl[1]
         newurl = 'git@'+user+'.github.com:'+repoowner+'/'+reponame
-        print('new url:',newurl)
+        print('cloning url:',newurl,'to: ',local_dest)
 
         repo = Repo.clone_from(newurl,local_dest)
 
