@@ -109,7 +109,9 @@ def find_repos(search_path=None,search_depth=5,exclude=None):
 
 def clone_list(repo_addresses,full_path,owners,user,password):
     for url in repo_addresses:
-        name=(url.split('/')[-1]).split('.')[0]
+        reponame = (url.split('/')[-1])
+        repoowner = (url.split('/')[-2])
+        name=reponame.split('.')[0]
     #    name = [item for item in name if item!='']
         owner = owners[url]
         local_dest = os.path.normpath(os.path.join(full_path,owner,name))
@@ -117,9 +119,10 @@ def clone_list(repo_addresses,full_path,owners,user,password):
             os.makedirs(local_dest)
         print('cloning ',url, local_dest)
         
-        newurl = url.split('//')
-        newurl = newurl[0]+'//'+user+':'+password+'@'+newurl[1]
-        #print('new url:',newurl)
+        # newurl = url.split('//')
+        # newurl = newurl[0]+'//'+user+':'+password+'@'+newurl[1]
+        newurl = 'git@'+user+'.github.com:'+repoowner+'/'+reponame
+        print('new url:',newurl)
 
         repo = Repo.clone_from(newurl,local_dest)
 
