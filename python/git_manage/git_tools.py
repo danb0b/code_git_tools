@@ -26,7 +26,8 @@ def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,rep
 
     gits_remote,owners = scan_github(user,password)
     print('remote gits: ', gits_remote)
-    nonlocal_github_urls=diff(gits_local,gits_remote)
+    gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
+    nonlocal_github_urls=diff(gits_local,gits_remote_formatted)
     remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
     print('diff: ', remaining)
     clone_list(remaining,repo_path,owners,user,password)    
@@ -107,24 +108,27 @@ def find_repos(search_path=None,search_depth=5,exclude=None):
                     pass
     return git_list
 
-def clone_list(repo_addresses,full_path,owners,user,password):
-    for url in repo_addresses:
+def reform_repo_name(url,user):
         reponame = (url.split('/')[-1])
         repoowner = (url.split('/')[-2])
+        newurl = 'git@'+user+'.github.com:'+repoowner+'/'+reponame
+        return newurl
+    
+
+def clone_list(repo_addresses,full_path,owners,user,password):
+    owners2 = dict([(reform_repo_name(url, user),owners[url]) for url in owners.keys()])
+    for url in repo_addresses:
+        reponame = (url.split('/')[-1])
         name=reponame.split('.')[0]
-    #    name = [item for item in name if item!='']
-        owner = owners[url]
+        owner = owners2[url]
         local_dest = os.path.normpath(os.path.join(full_path,owner,name))
         if not (os.path.exists(local_dest) and os.path.isdir(local_dest)):
             os.makedirs(local_dest)
-        # print('cloning ',url, local_dest)
         
-        # newurl = url.split('//')
-        # newurl = newurl[0]+'//'+user+':'+password+'@'+newurl[1]
-        newurl = 'git@'+user+'.github.com:'+repoowner+'/'+reponame
-        print('cloning url:',newurl,'to: ',local_dest)
+        # newurl = reform_repo_name(url, user)
+        print('cloning url:',url,'to: ',local_dest)
 
-        repo = Repo.clone_from(newurl,local_dest)
+        repo = Repo.clone_from(url,local_dest)
 
 def check_dirty(git_list):    
     dirty = []
