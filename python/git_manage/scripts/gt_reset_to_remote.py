@@ -17,6 +17,48 @@ import git_manage.git_tools as git_tools
 import argparse
 import yaml
 
+def reset_branches(git_list,verbose=True):    
+
+    git_command_error = []
+    no_path = []
+    
+    ll = len(git_list)
+    for ii,repo_path in enumerate(git_list):
+        print('{0:.0f}/{1:.0f}'.format(ii,ll),repo_path)
+        try:
+            r = Repo(repo_path)
+            
+            # remote_branches = []
+            # for rr in r.remote().refs:
+                # if not rr.name.lower().endswith('/head'):
+                    # remote_branches.append(rr)
+            # remote_branches_s = set(remote_branches)
+            
+            active_branch = r.active_branch
+            
+            try:
+                
+                if not r.is_dirty(untracked_files=True):
+                    
+                    for branch in r.branches:
+                        if branch.tracking_branch() is not None:
+    
+                            tb = branch.tracking_branch()
+                            if r.is_ancestor(branch.commit,tb.commit):
+                                if branch.commit.hexsha != tb.commit.hexsha:
+                                    branch.checkout()
+                                    r.head.reset(tb.commit,index=True,working_tree=True)
+                                    print('Yes')
+            except Exception as e:
+                print(e)
+            finally:
+                active_branch.checkout()
+        except git.NoSuchPathError as e:        
+         no_path.append((repo_path,e))
+        except git.GitCommandError as e:        
+            git_command_error.append((repo_path,e))   
+
+
 
 if __name__=='__main__':
    
@@ -35,19 +77,24 @@ if __name__=='__main__':
 
     git_list = git_tools.find_repos(p1,search_depth = 5,exclude=exclude)
 
-    not_synced = []
-    for item in git_list:
-        print(item)
-        r = Repo(item)
-    #    for b in r.branches:
-        b = r.active_branch
-        rem = b.tracking_branch()
-        if b.commit.hexsha != rem.commit.hexsha:
-            if not r.is_dirty(untracked_files=True):
-                if r.is_ancestor(b.commit,rem.commit):
-                    print('Yes')
-#                    r.head.reset(rem.commit)
-                    r.head.reset(rem.commit,index=True,working_tree=True)
-                    for item2 in r.untracked_files:
-                        os.remove(os.path.join(item,item2))
+    reset_branches(git_list)
+
+#     not_synced = []
+#     for item in git_list:
+#         print(item)
+#         r = Repo(item)
+#     #    for b in r.branches:
+#         b = r.active_branch
+#         rem = b.tracking_branch()
+#         if b.commit.hexsha != rem.commit.hexsha:
+#             if not r.is_dirty(untracked_files=True):
+#                 if r.is_ancestor(b.commit,rem.commit):
+#                     print('Yes')
+# #                    r.head.reset(rem.commit)
+#                     r.head.reset(rem.commit,index=True,working_tree=True)
+#                     for item2 in r.untracked_files:
+#                         os.remove(os.path.join(item,item2))
                     
+
+
+
