@@ -20,13 +20,13 @@ if __name__=='__main__':
     
     if args.exclude_local_f:
         with open(args.exclude_local_f) as f:
-            exclude = yaml.load(f)
+            exclude = yaml.load(f,Loader=yaml.FullLoader)
     else:
         exclude = None
 
     if args.exclude_remote_f:
         with open(args.exclude_remote_f) as f:
-            exclude_remote = yaml.load(f)
+            exclude_remote = yaml.load(f,Loader=yaml.FullLoader)
     else:
         exclude_remote = None
 

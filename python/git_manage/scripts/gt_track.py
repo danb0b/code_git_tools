@@ -17,7 +17,7 @@ if __name__=='__main__':
     
     if args.exclude_local_f:
         with open(args.exclude_local_f) as f:
-            exclude = yaml.load(f)
+            exclude = yaml.load(f,Loader=yaml.FullLoader)
     else:
         exclude = None
 
