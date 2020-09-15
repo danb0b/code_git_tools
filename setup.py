@@ -33,6 +33,6 @@ setup_kwargs['license']='MIT'
 setup_kwargs['packages']=packages
 setup_kwargs['package_dir']={'git_manage' : 'python/git_manage'}
 setup_kwargs['package_data'] = package_data
-setup_kwargs['install_requires']=['pytgithub','gitpython','yaml','getpass']
+setup_kwargs['install_requires']=['pygithub','gitpython','pyyaml']
   
 setup(**setup_kwargs)
