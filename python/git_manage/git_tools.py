@@ -119,11 +119,19 @@ def clone_list(repo_addresses,full_path,owners,user,password):
     owners2 = dict([(reform_repo_name(url, user),owners[url]) for url in owners.keys()])
     for url in repo_addresses:
         reponame = (url.split('/')[-1])
-        name=reponame.split('.')[0]
+        name=reponame.split('.')
+        name='.'.join([item for item in name if item!='git'])
+        
         owner = owners2[url]
+        ii = 1
         local_dest = os.path.normpath(os.path.join(full_path,owner,name))
-        if not (os.path.exists(local_dest) and os.path.isdir(local_dest)):
-            os.makedirs(local_dest)
+        
+        while (os.path.exists(local_dest) and os.path.isdir(local_dest)):
+            name = name+'_'+str(ii)
+            local_dest = os.path.normpath(os.path.join(full_path,owner,name))
+            ii+=1
+        os.makedirs(local_dest)
+            
         
         # newurl = reform_repo_name(url, user)
         print('cloning url:',url,'to: ',local_dest)
