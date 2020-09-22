@@ -1,2 +1,4 @@
 #!/bin/bash
-python3 ~/code_danb0b/code_git_tools/python/git_manage/scripts/gt_sync.py --exclude_local="/home/danaukes/code_danb0b/code_git_tools/bash/exclude_local.yaml"
+MY_PATH="`dirname \"$0\"`"
+
+python3 $MY_PATH/../python/git_manage/scripts/gt_sync.py --exclude_local="$MY_PATH/exclude_local.yaml"
