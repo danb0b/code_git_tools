@@ -15,7 +15,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exclude_local',dest='exclude_local_f',default = None)
     parser.add_argument('--exclude_remote',dest='exclude_remote_f',default = None)
-    parser.add_argument('--user',dest='user',default = None)
+    parser.add_argument('--token',dest='token',default = None)
     args = parser.parse_args()
     
     if args.exclude_local_f:
@@ -32,4 +32,4 @@ if __name__=='__main__':
 
     search_path = os.path.abspath(os.path.expanduser('~'))
 
-    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote,user = args.user)    
+    git_tools.retrieve_nonlocal_repos(search_path,exclude = exclude, exclude_remote=exclude_remote,token = args.token)    

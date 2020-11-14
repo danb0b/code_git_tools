@@ -12,7 +12,7 @@ import getpass
 
 from github import Github
 
-def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,repo_path = None,exclude_remote = None,user = None):
+def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,repo_path = None,exclude_remote = None,token=None):
     repo_path = repo_path or os.path.join(os.path.abspath(os.path.expanduser('~')),'repositories')
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
         os.mkdir(repo_path)
@@ -21,31 +21,32 @@ def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,rep
     gits_local = find_repos(search_path,search_depth,exclude)
     print('local gits: ', gits_local)
 
-    user = user or input('username: ')
-    password = getpass.getpass('Password: ')
+    token = token or input('token: ')
+    user = input('username: ')
+    #password = getpass.getpass('Password: ')
 
-    gits_remote,owners = scan_github(user,password)
+    gits_remote,owners = scan_github(token)
     print('remote gits: ', gits_remote)
     gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
     nonlocal_github_urls=diff(gits_local,gits_remote_formatted)
     remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
     print('diff: ', remaining)
-    clone_list(remaining,repo_path,owners,user,password)    
+    clone_list(remaining,repo_path,owners,user)    
 #
     
 #
-def get_all_repos(user,password):
+def get_all_repos(token):
 
 
-    g = Github(user, password)
+    g = Github(token)
 
     all_repos =  list(g.get_user().get_repos())
     return all_repos 
     
-def scan_github(user,password):
+def scan_github(token):
     all_gits = []
     owners = {}
-    for repo in get_all_repos(user,password):
+    for repo in get_all_repos(token):
         all_gits.append(repo.clone_url)
         owners[repo.clone_url]=repo.owner.login
     return all_gits,owners
@@ -115,7 +116,7 @@ def reform_repo_name(url,user):
         return newurl
     
 
-def clone_list(repo_addresses,full_path,owners,user,password):
+def clone_list(repo_addresses,full_path,owners,user):
     owners2 = dict([(reform_repo_name(url, user),owners[url]) for url in owners.keys()])
     for url in repo_addresses:
         reponame = (url.split('/')[-1])
