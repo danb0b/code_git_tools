@@ -2,6 +2,5 @@
 
 MY_PATH="`dirname \"$0\"`"
 
-python3 $MY_PATH/../python/git_manage/scripts/gt_retrieve.py --exclude_local="$MY_PATH/exclude_local_retrieve.yaml" --exclude_remote="$MY_PATH/exclude_remote.yaml" --user=danaukes
-python3 $MY_PATH/../python/git_manage/scripts/gt_retrieve.py --exclude_local="$MY_PATH/exclude_local_retrieve.yaml" --exclude_remote="$MY_PATH/exclude_remote.yaml" --user=danb0b
+python3 $MY_PATH/../python/git_manage/scripts/gt_retrieve.py --exclude_local="$MY_PATH/exclude_local_retrieve.yaml" --exclude_remote="$MY_PATH/exclude_remote.yaml"
 
