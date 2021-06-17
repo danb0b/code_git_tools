@@ -55,13 +55,11 @@ if __name__=='__main__':
     # print('Excluded Paths:', str(exclude_mod))
 
     if args.command == 'pull':
-        print('pull')
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
         git_list = git_tools.fetch(git_list)
         git_tools.check_unmatched(git_list)
 
     elif args.command == 'status':
-        print('status')
         
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
     
@@ -76,18 +74,15 @@ if __name__=='__main__':
             print(item,e)
         
     elif args.command == 'branch-status':
-        print('branch')
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
         git_tools.check_unmatched(git_list)
 
         
     elif args.command == 'clone':
-        print('clone')
-        # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
-        git_tools.retrieve_nonlocal_repos(git_list,repo_path=config['clone_path'], exclude_remote=['config.exclude_remote'],token = args.token)    
+        git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
+        git_tools.retrieve_nonlocal_repos(git_list,repo_path=clean_path(config['clone_path']), exclude_remote=config['exclude_remote'],token = args.token)    
         
     elif args.command == 'reset':
-        print('reset')
 
         #git_list = git_tools.find_repos(p1,search_depth = config.index_depth,exclude=exclude_mod)
         git_tools.reset_branches(git_list)
