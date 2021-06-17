@@ -9,14 +9,12 @@ exclude_local:
   - ~/Arizona State University
   - ~/cloud
   - ~/nas
-  - ~/code_external
 exclude_remote:
-  - Comprehensive_Presentation.git
-  - Comprehensive_Exam_Mohammad_Sharifzadeh.git
-  - hmil
-  - asu-unity-stack  
+  - my_repository_name
 index_depth: 5
 index_location: '~'
 clone_path: '~/repositories'
 archive_path: '~/repositories/dormant'
 index_cache: '~/repositories.yaml'
+github_accounts:
+  dummy: 012345

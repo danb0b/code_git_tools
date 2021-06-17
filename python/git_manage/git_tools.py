@@ -8,26 +8,20 @@ Created on Tue Dec 11 08:52:22 2018
 import os
 from git import Repo
 import git
-import getpass
 
 from github import Github
 
-def retrieve_nonlocal_repos(git_list,repo_path,exclude_remote = None,token=None):
+def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None):
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
         os.mkdir(repo_path)
-    remaining,owners,user = list_nonlocal_repos(git_list,repo_path,exclude_remote,token)
+
+    remaining,owners = list_nonlocal_repos(git_list,repo_path,user,token,exclude_remote)
     
     clone_list(remaining,repo_path,owners,user)    
 
-def list_nonlocal_repos(git_list,repo_path = None,exclude_remote = None,token=None):
+def list_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None):
     exclude_remote = exclude_remote or []
-    
     print('local gits: ', git_list)
-
-    user = input('username: ')
-    token = token or input('token: ')
-    #password = getpass.getpass('Password: ')
-
     gits_remote,owners = scan_github(token)
     print('remote gits: ', gits_remote)
     gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
@@ -37,7 +31,7 @@ def list_nonlocal_repos(git_list,repo_path = None,exclude_remote = None,token=No
         
     remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
     print('diff: ', remaining)
-    return remaining,owners,user
+    return remaining,owners
 
 def get_all_repos(token):
 
