@@ -37,7 +37,7 @@ if __name__=='__main__':
     parser.add_argument('command',metavar='command',type=str,help='command', default = '')
     parser.add_argument('--config',dest='config_f',default = None)
     parser.add_argument('--token',dest='token',default = None)
-    parser.add_argument('-f','--force-index',dest='force_index',action='store_true', default = False)
+    parser.add_argument('-n','--no-index',dest='no_index',action='store_true', default = False)
     parser.add_argument('-d','--debug',dest='debug',action='store_true', default = False)
     
     args = parser.parse_args()
@@ -72,7 +72,7 @@ if __name__=='__main__':
 
     index_cache_path = clean_path(config['index_cache'])
         
-    if ((args.command == 'index') or args.force_index or (not os.path.exists(index_cache_path))):
+    if ((args.command == 'index') or (not args.no_index) or (not os.path.exists(index_cache_path))):
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
         with open(index_cache_path,'w') as f:
             yaml.dump(git_list,f)
