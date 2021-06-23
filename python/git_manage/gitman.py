@@ -10,7 +10,6 @@ import argparse
 import yaml
 import sys
 
-
 def clean_path(path_in):
     path_out = os.path.normpath(os.path.abspath(os.path.expanduser(path_in)))
     return path_out
