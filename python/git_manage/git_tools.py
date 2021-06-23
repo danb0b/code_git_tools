@@ -8,33 +8,31 @@ Created on Tue Dec 11 08:52:22 2018
 import os
 from git import Repo
 import git
-import getpass
 
 from github import Github
 
-def retrieve_nonlocal_repos(search_path=None,search_depth = 5,exclude = None,repo_path = None,exclude_remote = None,token=None):
-    repo_path = repo_path or os.path.join(os.path.abspath(os.path.expanduser('~')),'repositories')
+def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None):
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
         os.mkdir(repo_path)
-    exclude_remote = exclude_remote or []
+
+    remaining,owners = list_nonlocal_repos(git_list,repo_path,user,token,exclude_remote)
     
-    gits_local = find_repos(search_path,search_depth,exclude)
-    print('local gits: ', gits_local)
+    clone_list(remaining,repo_path,owners,user)    
 
-    token = token or input('token: ')
-    user = input('username: ')
-    #password = getpass.getpass('Password: ')
-
+def list_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None):
+    exclude_remote = exclude_remote or []
+    print('local gits: ', git_list)
     gits_remote,owners = scan_github(token)
     print('remote gits: ', gits_remote)
     gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
-    nonlocal_github_urls=diff(gits_local,gits_remote_formatted)
+    nonlocal_github_urls=diff(git_list,gits_remote_formatted)
+    for blacklist_item in exclude_remote:
+        nonlocal_github_urls=[item for item in nonlocal_github_urls if blacklist_item not in item]
+        
     remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
     print('diff: ', remaining)
-    clone_list(remaining,repo_path,owners,user)    
-#
-    
-#
+    return remaining,owners
+
 def get_all_repos(token):
 
 
@@ -146,7 +144,7 @@ def check_dirty(git_list):
 
     ll = len(git_list)
     for ii,item in enumerate(git_list):
-        print('{0:.0f}/{1:.0f}'.format(ii,ll),item)
+        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
         try:
             repo = Repo(item)
             if repo.is_dirty(untracked_files=True):
@@ -166,7 +164,7 @@ def fetch(git_list,verbose = True):
 
     ll = len(git_list)
     for ii,item in enumerate(git_list):
-        print('{0:.0f}/{1:.0f}'.format(ii,ll),item)
+        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
         try:
             repo = Repo(item)
             
@@ -203,7 +201,7 @@ def check_unmatched(git_list,verbose=True):
     
     ll = len(git_list)
     for ii,repo_path in enumerate(git_list):
-        print('{0:.0f}/{1:.0f}'.format(ii,ll),repo_path)
+        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),repo_path)
         try:
             r = Repo(repo_path)
             
@@ -258,6 +256,47 @@ def check_unmatched(git_list,verbose=True):
         print('---------')
     
     # return git_list2,unmatched,no_path,git_command_error   
+
+def reset_branches(git_list,verbose=True):    
+
+    git_command_error = []
+    no_path = []
+    
+    ll = len(git_list)
+    for ii,repo_path in enumerate(git_list):
+        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),repo_path)
+        try:
+            r = Repo(repo_path)
+            
+            # remote_branches = []
+            # for rr in r.remote().refs:
+                # if not rr.name.lower().endswith('/head'):
+                    # remote_branches.append(rr)
+            # remote_branches_s = set(remote_branches)
+            
+            active_branch = r.active_branch
+            
+            try:
+                
+                if not r.is_dirty(untracked_files=True):
+                    
+                    for branch in r.branches:
+                        if branch.tracking_branch() is not None:
+    
+                            tb = branch.tracking_branch()
+                            if r.is_ancestor(branch.commit,tb.commit):
+                                if branch.commit.hexsha != tb.commit.hexsha:
+                                    branch.checkout()
+                                    r.head.reset(tb.commit,index=True,working_tree=True)
+                                    print('Yes')
+            except Exception as e:
+                print(e)
+            finally:
+                active_branch.checkout()
+        except git.NoSuchPathError as e:        
+         no_path.append((repo_path,e))
+        except git.GitCommandError as e:        
+            git_command_error.append((repo_path,e))   
 
 if __name__=='__main__':
     r = get_all_repos()
