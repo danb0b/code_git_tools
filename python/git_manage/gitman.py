@@ -80,6 +80,14 @@ if __name__=='__main__':
         if (args.command == 'index'):
             print(s)
 
+    if ((args.command == 'list') or (not args.no_index) or (not os.path.exists(index_cache_path))):
+        git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
+        with open(index_cache_path,'w') as f:
+            yaml.dump(git_list,f)
+        s=yaml.dump(git_list)
+        if (args.command == 'index'):
+            print(s)
+
     with open(index_cache_path) as f:
         git_list=yaml.load(f,Loader=yaml.Loader)
 
