@@ -152,6 +152,8 @@ if __name__=='__main__':
 
     elif args.command == 'index':
         pass
+    elif args.command == 'list':
+        pass
     else:
         raise KeyError('that argument cannot be found')
         
