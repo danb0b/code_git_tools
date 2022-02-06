@@ -11,27 +11,33 @@ import git
 
 from github import Github
 
-def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None):
+def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,verbose=True):
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
         os.mkdir(repo_path)
 
-    remaining,owners = list_nonlocal_repos(git_list,repo_path,user,token,exclude_remote)
+    if verbose:
+        print('local gits: ', git_list)
+    nonlocal_github_urls,owners = list_nonlocal_repos(git_list,user,token,verbose)
+    for blacklist_item in exclude_remote:
+        nonlocal_github_urls=[item for item in nonlocal_github_urls if blacklist_item not in item]
+    exclude_remote = exclude_remote or []
+    remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
+    if verbose:
+        print('diff: ', remaining)
     
     clone_list(remaining,repo_path,owners,user)    
 
-def list_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None):
-    exclude_remote = exclude_remote or []
-    print('local gits: ', git_list)
-    gits_remote,owners = scan_github(token)
-    print('remote gits: ', gits_remote)
-    gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
+def list_nonlocal_repos(git_list,user,token,verbose=False):
+    gits_remote_formatted,owners = list_remote_repos(user, token,verbose)
     nonlocal_github_urls=diff(git_list,gits_remote_formatted)
-    for blacklist_item in exclude_remote:
-        nonlocal_github_urls=[item for item in nonlocal_github_urls if blacklist_item not in item]
-        
-    remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
-    print('diff: ', remaining)
-    return remaining,owners
+    return nonlocal_github_urls,owners
+
+def list_remote_repos(user,token,verbose=False):
+    gits_remote,owners = scan_github(token)
+    if verbose:
+        print('remote gits: ', gits_remote)
+    gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
+    return gits_remote_formatted,owners
 
 def get_all_repos(token):
 

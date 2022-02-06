@@ -11,6 +11,15 @@ import argparse
 import yaml
 import sys
 
+def new_user():
+    print('No github accounts present in config')
+    user = input('username: ')
+    token = input('token: ')
+    save = input('save user info? (y/n)')
+    save = save.lower()=='y'
+    return user,token,save
+
+
 def clean_path(path_in):
     path_out = os.path.normpath(os.path.abspath(os.path.expanduser(path_in)))
     return path_out
@@ -85,13 +94,15 @@ if __name__=='__main__':
         with open(index_cache_path,'w') as f:
             yaml.dump(git_list,f)
         s=yaml.dump(git_list)
-        if (args.command == 'index'):
+        if (args.command == 'list'):
             print(s)
+
 
     with open(index_cache_path) as f:
         git_list=yaml.load(f,Loader=yaml.Loader)
 
     # print('Excluded Paths:', str(exclude_mod))
+
 
     if args.command == 'pull':
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
@@ -119,13 +130,6 @@ if __name__=='__main__':
         
     elif args.command == 'clone':
         
-        def new_user():
-            print('No github accounts present in config')
-            user = input('username: ')
-            token = input('token: ')
-            save = input('save user info? (y/n)')
-            save = save.lower()=='y'
-            return user,token,save
 
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
         try:
@@ -144,6 +148,33 @@ if __name__=='__main__':
             if save:
                 config['github_accounts']={}
                 config['github_accounts'][user]=token
+
+    elif (args.command == 'list-remote'):
+
+        try:
+            if len(config['github_accounts'])>0:
+                for user,token in config['github_accounts'].items():
+                    print('User: ',user)
+                    git_list,owners = git_tools.list_remote_repos(user=user,token = token)
+                    s=yaml.dump(git_list)
+                    print(s)
+            else: 
+                user,token,save = new_user()
+                git_list,owners = git_tools.list_nonlocal_repos(user=user,token = token)
+                s=yaml.dump(git_list)
+                print(s)
+                if save:
+                    config['github_accounts'][user]=token
+        except KeyError as e:
+            user,token,save = new_user()
+            git_list,owners = git_tools.list_nonlocal_repos(user=user,token = token)
+            s=yaml.dump(git_list)
+            print(s)
+            if save:
+                config['github_accounts']={}
+                config['github_accounts'][user]=token
+
+
         
     elif args.command == 'reset':
 
