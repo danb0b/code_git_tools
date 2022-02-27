@@ -47,7 +47,8 @@ if __name__=='__main__':
     parser.add_argument('--config',dest='config_f',default = None)
     parser.add_argument('--token',dest='token',default = None)
     parser.add_argument('-n','--no-index',dest='no_index',action='store_true', default = False)
-    parser.add_argument('-d','--debug',dest='debug',action='store_true', default = False)
+    parser.add_argument('-v','--verbose',dest='verbose',action='store_true', default = False)
+    parser.add_argument('-u','--user',dest='user',default = 'all')
     
     args = parser.parse_args()
     
@@ -81,6 +82,7 @@ if __name__=='__main__':
 
     index_cache_path = clean_path(config['index_cache'])
         
+    
     if ((args.command == 'index') or (not args.no_index) or (not os.path.exists(index_cache_path))):
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
         with open(index_cache_path,'w') as f:
@@ -129,53 +131,82 @@ if __name__=='__main__':
 
         
     elif args.command == 'clone':
-        
-
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
-        try:
-            if len(config['github_accounts'])>0:
-                for username,token in config['github_accounts'].items():
-                    print('User: ',username)
-                    git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']), user=username,token = token,exclude_remote=config['exclude_remote'])    
-            else: 
-                user,token,save = new_user()
-                git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']),user,token,exclude_remote=config['exclude_remote'])    
-                if save:
-                    config['github_accounts'][user]=token
-        except KeyError as e:
+
+        if args.user=='all':
+            for username,token in config['github_accounts'].items():
+                print('User: ',username)
+                git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']), user=username,token = token,exclude_remote=config['exclude_remote'],verbose = args.verbose)    
+        elif args.user == 'new':        
             user,token,save = new_user()
-            git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']),user,token,exclude_remote=config['exclude_remote'])    
+            git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']),user,token,exclude_remote=config['exclude_remote'],verbose = args.verbose)    
             if save:
-                config['github_accounts']={}
-                config['github_accounts'][user]=token
+                try:
+                    config['github_accounts'][user]=token
+                except KeyError:
+                    config['github_accounts']={}
+                    config['github_accounts'][user]=token
+        else:
+            token = config['github_accounts'][args.user]
+            git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']), user=args.user,token = token,exclude_remote=config['exclude_remote'],verbose = args.verbose)    
 
     elif (args.command == 'list-remote'):
-
-        try:
-            if len(config['github_accounts'])>0:
-                for user,token in config['github_accounts'].items():
-                    print('User: ',user)
-                    git_list,owners = git_tools.list_remote_repos(user=user,token = token)
-                    s=yaml.dump(git_list)
-                    print(s)
-            else: 
-                user,token,save = new_user()
-                git_list,owners = git_tools.list_nonlocal_repos(user=user,token = token)
-                s=yaml.dump(git_list)
-                print(s)
-                if save:
-                    config['github_accounts'][user]=token
-        except KeyError as e:
+        all_users = {}
+        if args.user=='all':
+            for user,token in config['github_accounts'].items():
+                git_list,owners,owner_repo_dict = git_tools.list_remote_repos(user=user,token = token)
+                all_users[user]=owner_repo_dict
+                
+        elif args.user == 'new':        
             user,token,save = new_user()
-            git_list,owners = git_tools.list_nonlocal_repos(user=user,token = token)
-            s=yaml.dump(git_list)
-            print(s)
+            git_list,owners,owner_repo_dict = git_tools.list_remote_repos(user=user,token = token)
+            all_users[user]=owner_repo_dict
+
             if save:
-                config['github_accounts']={}
-                config['github_accounts'][user]=token
-
-
+                try:
+                    config['github_accounts'][user]=token
+                except KeyError:
+                    config['github_accounts']={}
+                    config['github_accounts'][user]=token
+        else:
+            token = config['github_accounts'][args.user]
+            git_list,owners,owner_repo_dict = git_tools.list_remote_repos(user=args.user,token = token)
+            all_users[args.user]=owner_repo_dict
         
+        print(yaml.dump(all_users))
+
+    elif (args.command == 'list-remote-only'):
+
+        git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
+
+        # all_users = {}
+        all_repos = []
+        if args.user=='all':
+            for user,token in config['github_accounts'].items():
+                local_git_list,owners,owner_repo_dict = git_tools.list_nonlocal_repos(git_list,user=user,token = token)
+                # all_users[user]=owner_repo_dict
+                all_repos.extend(local_git_list)
+        elif args.user == 'new':        
+            user,token,save = new_user()
+            local_git_list,owners,owner_repo_dict = git_tools.list_nonlocal_repos(git_list,user=user,token = token)
+            # all_users[user]=owner_repo_dict
+            all_repos.extend(local_git_list)
+
+            if save:
+                try:
+                    config['github_accounts'][user]=token
+                except KeyError:
+                    config['github_accounts']={}
+                    config['github_accounts'][user]=token
+        else:
+            token = config['github_accounts'][args.user]
+            local_git_list,owners,owner_repo_dict = git_tools.list_nonlocal_repos(git_list,user=args.user,token = token)
+            # all_users[args.user]=owner_repo_dict
+            all_repos.extend(local_git_list)
+
+        all_repos = [git_tools.remote_url_from_ssh_address(item) for item in all_repos]        
+        print(yaml.dump(all_repos))
+
     elif args.command == 'reset':
 
         #git_list = git_tools.find_repos(p1,search_depth = config.index_depth,exclude=exclude_mod)

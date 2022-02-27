@@ -8,7 +8,6 @@ Created on Tue Dec 11 08:52:22 2018
 import os
 from git import Repo
 import git
-
 from github import Github
 
 def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,verbose=True):
@@ -17,31 +16,27 @@ def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,
 
     if verbose:
         print('local gits: ', git_list)
-    nonlocal_github_urls,owners = list_nonlocal_repos(git_list,user,token,verbose)
-    for blacklist_item in exclude_remote:
-        nonlocal_github_urls=[item for item in nonlocal_github_urls if blacklist_item not in item]
-    exclude_remote = exclude_remote or []
-    remaining = list(set(nonlocal_github_urls).difference(set(exclude_remote)))
+    nonlocal_github_urls,owners,owner_repo_dict = list_nonlocal_repos(git_list,user,token,verbose)
+    remaining =list(set(nonlocal_github_urls) - set(format_repo_list(exclude_remote,destination_format='ssh',user=user)))
     if verbose:
         print('diff: ', remaining)
     
     clone_list(remaining,repo_path,owners,user)    
 
 def list_nonlocal_repos(git_list,user,token,verbose=False):
-    gits_remote_formatted,owners = list_remote_repos(user, token,verbose)
+    gits_remote_formatted,owners,owner_repo_dict = list_remote_repos(user, token,verbose,format_local=True)
     nonlocal_github_urls=diff(git_list,gits_remote_formatted)
-    return nonlocal_github_urls,owners
+    return nonlocal_github_urls,owners,owner_repo_dict
 
-def list_remote_repos(user,token,verbose=False):
-    gits_remote,owners = scan_github(token)
+def list_remote_repos(user,token,verbose=False,format_local=False):
+    gits_remote,owners,owner_repo_dict = scan_github(token)
     if verbose:
         print('remote gits: ', gits_remote)
-    gits_remote_formatted = [reform_repo_name(item, user) for item in gits_remote]
-    return gits_remote_formatted,owners
+    if format_local:
+        gits_remote = [local_ssh_from_url_user(item, user) for item in gits_remote]
+    return gits_remote,owners,owner_repo_dict
 
 def get_all_repos(token):
-
-
     g = Github(token)
 
     all_repos =  list(g.get_user().get_repos())
@@ -50,10 +45,16 @@ def get_all_repos(token):
 def scan_github(token):
     all_gits = []
     owners = {}
+    owner_repo_dict = {}
     for repo in get_all_repos(token):
         all_gits.append(repo.clone_url)
         owners[repo.clone_url]=repo.owner.login
-    return all_gits,owners
+        try:
+            owner_repo_dict[repo.owner.login].append(repo.clone_url)
+        except KeyError:
+            owner_repo_dict[repo.owner.login] = []
+            owner_repo_dict[repo.owner.login].append(repo.clone_url)
+    return all_gits,owners,owner_repo_dict
 
 def diff(local,github):    
     local_dict = {}
@@ -113,15 +114,58 @@ def find_repos(search_path=None,search_depth=5,exclude=None):
                     pass
     return git_list
 
-def reform_repo_name(url,user):
-        reponame = (url.split('/')[-1])
-        repoowner = (url.split('/')[-2])
-        newurl = 'git@'+user+'.github.com:'+repoowner+'/'+reponame
+def is_ssh_format(item):
+    return item.startswith('git@')
+
+def is_github_clone_format(item):
+    return item.startswith('https://github.com/')
+
+def format_repo_list(list_in,destination_format='github',user=None):
+    list_out = []
+    for item in list_in:
+        if is_ssh_format(item):
+            if destination_format=='github':
+                list_out.append(remote_url_from_ssh_address(item))
+            elif destination_format=='ssh':
+                list_out.append(item)
+            else:
+                raise(Exception('format not specified'))
+        elif is_github_clone_format(item):
+            if destination_format=='github':
+                list_out.append(item)
+            elif destination_format=='ssh':
+                list_out.append(local_ssh_from_url_user(item, user))                
+            else:
+                raise(Exception('format not specified'))
+        else:
+            raise(Exception('format not identified'))
+    return list_out
+            
+
+def local_ssh_from_url_user(url,user):
+        a,b = url.split('github.com/')
+        # b1,b2 = b.split('/')
+        # owner = b1
+        # reponame = b2
+        # reponame = (url.split('/')[-1])
+        # repoowner = (url.split('/')[-2])
+        newurl = 'git@'+user+'.github.com:'+b
         return newurl
     
+def remote_urls_from_folder(local_folder):
+    r = Repo(local_folder)
+    remote = r.remote()
+    ssh = remote.url
+    return remote_url_from_ssh_address(ssh)
+
+def remote_url_from_ssh_address(local_ssh_address):
+    a = 'https://github.com/'
+    b = local_ssh_address.split(':')[-1]
+    c = ''.join([a,b])
+    return c
 
 def clone_list(repo_addresses,full_path,owners,user):
-    owners2 = dict([(reform_repo_name(url, user),owners[url]) for url in owners.keys()])
+    owners2 = dict([(local_ssh_from_url_user(url, user),owners[url]) for url in owners.keys()])
     for url in repo_addresses:
         reponame = (url.split('/')[-1])
         name=reponame.split('.')
@@ -138,7 +182,6 @@ def clone_list(repo_addresses,full_path,owners,user):
         os.makedirs(local_dest)
             
         
-        # newurl = reform_repo_name(url, user)
         print('cloning url:',url,'to: ',local_dest)
 
         repo = Repo.clone_from(url,local_dest)
