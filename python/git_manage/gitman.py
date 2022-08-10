@@ -216,8 +216,12 @@ if __name__=='__main__':
         pass
     elif args.command == 'list':
         pass
-    else:
-        raise KeyError('that argument cannot be found')
+    elif args.command == 'list-active-branch':
+
+        current_branch = git_tools.get_current_branch(git_list)
+        s = yaml.dump(current_branch)
+        print(s)
+        
         
     if args.config_f is None:
         config_save_path = personal_config_path

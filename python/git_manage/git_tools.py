@@ -204,6 +204,17 @@ def check_dirty(git_list):
 
     return git_list2,dirty,no_path
 
+def get_current_branch(git_list):    
+    current_branch={}
+
+    ll = len(git_list)
+    for ii,item in enumerate(git_list):
+        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
+        repo = Repo(item)
+        current_branch[item]=str(repo.active_branch)
+
+    return current_branch
+
 def fetch(git_list,verbose = True):    
 
     unmatched = []
