@@ -37,12 +37,6 @@ def clean_path(path_in):
     path_out = os.path.normpath(os.path.abspath(os.path.expanduser(path_in)))
     return path_out
 
-# def makedirs(path_in):
-#     path = clean_path(path_in)
-#     if os.path.splitext(path)[1]!='':
-#         path = os.path.split(path)[0]
-#     os.makedirs(path)
-    
 if hasattr(sys, 'frozen'):
     module_path = os.path.normpath(os.path.join(os.path.dirname(sys.executable),''))
 else:
@@ -109,8 +103,8 @@ if __name__=='__main__':
 
     if args.command == 'pull':
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
-        git_list = git_tools.fetch(git_list)
-        git_tools.check_unmatched(git_list)
+        git_list = git_tools.fetch(git_list,args.verbose)
+        git_tools.check_unmatched(git_list,verbose)
 
     elif args.command == 'status':
         
@@ -224,6 +218,10 @@ if __name__=='__main__':
             print(s)
     elif args.command == 'list':
         print(s)
+    elif args.command == 'exclude':
+        path = clean_path(os.curdir)
+        config['exclude_local'].append(path)
+        print(path)
     else:
         raise(Exception('command does not exist'))        
         

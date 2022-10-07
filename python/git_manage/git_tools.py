@@ -221,7 +221,7 @@ def get_current_branch(git_list):
 
     return current_branch
 
-def fetch(git_list,verbose = True):    
+def fetch(git_list,verbose = False):    
 
     unmatched = []
     git_command_error = []
