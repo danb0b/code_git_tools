@@ -14,6 +14,7 @@ import sys
 command_string='''
 branch-status,
 clone,
+exclude,
 index,
 list, 
 list-remote,
@@ -110,14 +111,22 @@ if __name__=='__main__':
         
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
     
-        git_list2,dirty,no_path = git_tools.check_dirty(git_list,args.verbose)
-        print('Dirty:')
-        for item in dirty:
-            print(item)
-        print('---------')
-        print('No Path:')
-        for item,e in no_path:
-            print(item,e)
+        # git_list2,dirty,no_path = git_tools.check_dirty(git_list,args.verbose)
+        dict1 = git_tools.check_dirty(git_list,args.verbose)
+        if args.verbose:
+            s = yaml.dump(dict1)
+            print(s)
+        else:
+            del dict1['git_list']
+            s = yaml.dump(dict1)
+            print(s)
+        # print('Dirty:')
+        # for item in dirty:
+            # print(item)
+        # print('---------')
+        # print('No Path:')
+        # for item,e in no_path:
+            # print(item,e)
         
     elif args.command in ['branch-status','bs','branch_status']:
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)

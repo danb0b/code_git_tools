@@ -188,9 +188,11 @@ def clone_list(repo_addresses,full_path,owners,user):
         repo = Repo.clone_from(url,local_dest)
 
 def check_dirty(git_list,verbose=False):    
-    dirty = []
-    no_path = []
-    git_list2 = []
+    
+    dict1 = {}
+    dict1['dirty'] = []
+    dict1['no_path'] = []
+    dict1['git_list']= []
 
     ll = len(git_list)
     for ii,item in enumerate(git_list):
@@ -199,16 +201,18 @@ def check_dirty(git_list,verbose=False):
         try:
             repo = Repo(item)
             if repo.is_dirty(untracked_files=True):
-                dirty.append(item)
-            git_list2.append(item)
+                dict1['dirty'].append(item)
+            dict1['git_list'].append(item)
         except git.NoSuchPathError as e:        
-            no_path.append((item,e))
+            dict1['no_path'].append((item,e))
 
-    if verbose:
-        print('---------')
+    # if verbose:
+        # print('---------')
 
 
-    return git_list2,dirty,no_path
+    # return git_list2,dirty,no_path
+    
+    return dict1
 
 def get_current_branch(git_list):    
     current_branch={}
