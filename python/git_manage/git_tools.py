@@ -186,14 +186,15 @@ def clone_list(repo_addresses,full_path,owners,user):
 
         repo = Repo.clone_from(url,local_dest)
 
-def check_dirty(git_list):    
+def check_dirty(git_list,verbose=False):    
     dirty = []
     no_path = []
     git_list2 = []
 
     ll = len(git_list)
     for ii,item in enumerate(git_list):
-        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
+        if verbose:
+            print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
         try:
             repo = Repo(item)
             if repo.is_dirty(untracked_files=True):
@@ -201,6 +202,10 @@ def check_dirty(git_list):
             git_list2.append(item)
         except git.NoSuchPathError as e:        
             no_path.append((item,e))
+
+    if verbose:
+        print('---------')
+
 
     return git_list2,dirty,no_path
 

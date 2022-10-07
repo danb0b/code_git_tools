@@ -11,6 +11,19 @@ import argparse
 import yaml
 import sys
 
+command_string='''
+branch-status,
+clone,
+index,
+list, 
+list-remote,
+list-remote-only,
+list-active-branch,
+pull,
+reset,
+status,
+'''
+
 def new_user():
     print('No github accounts present in config')
     user = input('username: ')
@@ -24,11 +37,11 @@ def clean_path(path_in):
     path_out = os.path.normpath(os.path.abspath(os.path.expanduser(path_in)))
     return path_out
 
-def makedirs(path_in):
-    path = clean_path(path_in)
-    if os.path.splitext(path)[1]!='':
-        path = os.path.split(path)[0]
-    os.makedirs(path)
+# def makedirs(path_in):
+#     path = clean_path(path_in)
+#     if os.path.splitext(path)[1]!='':
+#         path = os.path.split(path)[0]
+#     os.makedirs(path)
     
 if hasattr(sys, 'frozen'):
     module_path = os.path.normpath(os.path.join(os.path.dirname(sys.executable),''))
@@ -43,7 +56,7 @@ package_config_path = clean_path(os.path.join(support_path,'config.yaml'))
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('command',metavar='command',type=str,help='command', default = '')
+    parser.add_argument('command',metavar='command',type=str,help=command_string, default = '')
     parser.add_argument('--config',dest='config_f',default = None)
     parser.add_argument('--token',dest='token',default = None)
     parser.add_argument('-n','--no-index',dest='no_index',action='store_true', default = False)
@@ -82,23 +95,11 @@ if __name__=='__main__':
 
     index_cache_path = clean_path(config['index_cache'])
         
-    
-    if ((args.command == 'index') or (not args.no_index) or (not os.path.exists(index_cache_path))):
+    if ((args.command == 'index') or (args.command == 'list') or (not args.no_index) or (not os.path.exists(index_cache_path))):
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
         with open(index_cache_path,'w') as f:
             yaml.dump(git_list,f)
         s=yaml.dump(git_list)
-        if (args.command == 'index'):
-            print(s)
-
-    if ((args.command == 'list') or (not args.no_index) or (not os.path.exists(index_cache_path))):
-        git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
-        with open(index_cache_path,'w') as f:
-            yaml.dump(git_list,f)
-        s=yaml.dump(git_list)
-        if (args.command == 'list'):
-            print(s)
-
 
     with open(index_cache_path) as f:
         git_list=yaml.load(f,Loader=yaml.Loader)
@@ -115,8 +116,7 @@ if __name__=='__main__':
         
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
     
-        git_list2,dirty,no_path = git_tools.check_dirty(git_list)
-        print('---------')
+        git_list2,dirty,no_path = git_tools.check_dirty(git_list,args.verbose)
         print('Dirty:')
         for item in dirty:
             print(item)
@@ -212,16 +212,18 @@ if __name__=='__main__':
         #git_list = git_tools.find_repos(p1,search_depth = config.index_depth,exclude=exclude_mod)
         git_tools.reset_branches(git_list)
 
-    elif args.command == 'index':
-        pass
-    elif args.command == 'list':
-        pass
     elif args.command == 'list-active-branch':
 
         current_branch = git_tools.get_current_branch(git_list)
         s = yaml.dump(current_branch)
         print(s)
-        
+    elif args.command == 'index':
+        if args.verbose:
+            print(s)
+    elif args.command == 'list':
+        print(s)
+    else:
+        raise(Exception('command does not exist'))        
         
     if args.config_f is None:
         config_save_path = personal_config_path
