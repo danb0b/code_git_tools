@@ -9,6 +9,7 @@ import os
 from git import Repo
 import git
 from github import Github
+import yaml
 
 def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,verbose=True):
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
@@ -256,17 +257,19 @@ def fetch(git_list,verbose = True):
     
     return git_list2
     
-def check_unmatched(git_list,verbose=True):    
-
-    git_command_error = []
-    no_path = []
-    missing_local_branches = []
-    missing_remote_branches = []
-    unsynced_branches = []
+def check_unmatched(git_list,verbose=False):    
     
+    dict1 = {}
+    dict1['git_command_error'] = {}
+    dict1['no_path'] = []
+    dict1['missing_local_branches'] = {}
+    dict1['missing_remote_branches'] = {}
+    dict1['unsynced_branches'] = {}
+
     ll = len(git_list)
     for ii,repo_path in enumerate(git_list):
-        print('{0:.0f}/{1:.0f}'.format(ii+1,ll),repo_path)
+        if verbose:
+            print('{0:.0f}/{1:.0f}'.format(ii+1,ll),repo_path)
         try:
             r = Repo(repo_path)
             
@@ -280,47 +283,64 @@ def check_unmatched(git_list,verbose=True):
             for branch in r.branches:
                 if branch.tracking_branch() is not None:
                     if branch.commit.hexsha != branch.tracking_branch().commit.hexsha:
-                        unsynced_branches.append((repo_path,branch.name))
+                        try:
+                            dict1['unsynced_branches'][repo_path].append(branch.name)
+                        except KeyError:
+                            dict1['unsynced_branches'][repo_path]=[]
+                            dict1['unsynced_branches'][repo_path].append(branch.name)
                 else:
-                    missing_remote_branches.append((repo_path,branch.name))
+                    try:
+                        dict1['missing_remote_branches'][repo_path].append(branch.name)
+                    except KeyError:
+                        dict1['missing_remote_branches'][repo_path]=[]
+                        dict1['missing_remote_branches'][repo_path].append(branch.name)
                 
             b_s = [branch.tracking_branch() for branch in r.branches]
             b_s = [branch for branch in b_s if branch is not None]
             b_s = set(b_s)
             not_local = list(remote_branches_s.difference(b_s))
             for ref in not_local:
-                missing_local_branches.append((repo_path,ref.name))
+                try:
+                    dict1['missing_local_branches'][repo_path].append(ref.name)
+                except KeyError:
+                    dict1['missing_local_branches'][repo_path]=[]
+                    dict1['missing_local_branches'][repo_path].append(ref.name)
+                        
             
         except git.NoSuchPathError as e:        
-            no_path.append((repo_path,e))
+            dict1['no_path'].append(repo_path)
+                
         except git.GitCommandError as e:        
-            git_command_error.append((repo_path,e))
+            dict1['git_command_error'].append(repo_path)
+                
     
-    if verbose:
-    
-        print('---------')
-        print('Missing Local Branches:')
-        for item in missing_local_branches:
-            print(item)
-        print('---------')
-        print('Missing Remote Branches:')
-        for item in missing_remote_branches:
-            print(item)
-        print('---------')
-        print('Branches Unsynced:')
-        for item in unsynced_branches:
-            print(item)
-        print('---------')
-        print('No Path:')
-        for item,e in no_path:
-            print(item,e)
-        print('---------')
-        print('Git Command:')
-        for item,e in git_command_error:
-            print(item,e)
-        print('---------')
-    
+    # print('---------')
+    # print('Missing Local Branches:')
+    # for item in dict1['missing_local_branches']:
+    #     print(item)
+    # print('---------')
+    # print('Missing Remote Branches:')
+    # for item in dict1['missing_remote_branches']:
+    #     print(item)
+    # print('---------')
+    # print('Branches Unsynced:')
+    # for item in dict1['unsynced_branches']:
+    #     print(item)
+    # print('---------')
+    # print('No Path:')
+    # for item,e in dict1['no_path']:
+    #     print(item,e)
+    # print('---------')
+    # print('Git Command:')
+    # for item,e in dict1['git_command_error']:
+    #     print(item,e)
+    # print('---------')
+
     # return git_list2,unmatched,no_path,git_command_error   
+
+    s = yaml.dump(dict1)
+    print(s)
+    return dict1
 
 def reset_branches(git_list,verbose=True):    
 

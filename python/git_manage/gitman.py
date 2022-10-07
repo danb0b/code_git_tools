@@ -127,7 +127,7 @@ if __name__=='__main__':
         
     elif args.command in ['branch-status','bs','branch_status']:
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
-        git_tools.check_unmatched(git_list)
+        git_tools.check_unmatched(git_list,args.verbose)
 
         
     elif args.command == 'clone':
