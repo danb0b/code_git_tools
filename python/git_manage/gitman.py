@@ -105,7 +105,7 @@ if __name__=='__main__':
     if args.command == 'pull':
         # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
         git_list = git_tools.fetch(git_list,args.verbose)
-        git_tools.check_unmatched(git_list,verbose)
+        git_tools.check_unmatched(git_list,args.verbose)
 
     elif args.command == 'status':
         
