@@ -338,8 +338,6 @@ def check_unmatched(git_list,verbose=False):
 
     # return git_list2,unmatched,no_path,git_command_error   
 
-    s = yaml.dump(dict1)
-    print(s)
     return dict1
 
 def reset_branches(git_list,verbose=True):    
