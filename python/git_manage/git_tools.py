@@ -386,5 +386,6 @@ def reset_branches(git_list,verbose=True):
             git_command_error.append((repo_path,e))   
 
 if __name__=='__main__':
-    r = get_all_repos()
+    # r = get_all_repos()
+    pass
     
