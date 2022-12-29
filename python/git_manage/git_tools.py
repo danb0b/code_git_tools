@@ -227,10 +227,8 @@ def get_current_branch(git_list):
 
 def fetch(git_list,verbose = False):    
 
-    unmatched = []
-    git_command_error = []
+    git_command_errors = {}
     git_list2 = []
-    no_path = []
 
     ll = len(git_list)
     for ii,item in enumerate(git_list):
@@ -242,22 +240,26 @@ def fetch(git_list,verbose = False):
             # if repo.commit().hexsha != fetches[0].commit.hexsha:
                 # unmatched.append(item)
             git_list2.append(item)
-        except git.NoSuchPathError as e:        
-            no_path.append((item,e))
+        except git.NoSuchPathError as e:     
+            try:   
+                git_command_errors[str(e)].append(item)
+            except KeyError:
+                git_command_errors[str(e)]=[]
+                git_command_errors[str(e)].append(item)
         except git.GitCommandError as e:        
-            git_command_error.append((item,e))
+            try:   
+                git_command_errors[str(e)].append(item)
+            except KeyError:
+                git_command_errors[str(e)]=[]
+                git_command_errors[str(e)].append(item)
             
-    if verbose:
+    if len(git_command_errors)>0:
+
+        print("------------------")
+        print("Errors:")
+        print(yaml.dump(git_command_errors))
+        print("------------------")
     
-        print('---------')
-        print('No Path:')
-        for item,e in no_path:
-            print(item,e)
-        print('---------')
-        print('Git Command:')
-        for item,e in git_command_error:
-            print(item,e)
-        print('---------')
     
     return git_list2
     
