@@ -87,7 +87,7 @@ if __name__=='__main__':
     exclude = [clean_path(item) for item in exclude]
 
     exclude_mod = exclude[:]
-    exclude_mod.append(clean_path(config['archive_path']))
+    exclude_mod.extend([clean_path(item) for item in config['archive_path']])
 
     index_cache_path = clean_path(config['index_cache'])
         
