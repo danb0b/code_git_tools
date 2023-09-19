@@ -288,12 +288,20 @@ def check_unmatched(git_list,verbose=False):
             
             for branch in r.branches:
                 if branch.tracking_branch() is not None:
-                    if branch.commit.hexsha != branch.tracking_branch().commit.hexsha:
+                    try:
+                        if branch.commit.hexsha != branch.tracking_branch().commit.hexsha:
+                            try:
+                                dict1['unsynced_branches'][repo_path].append(branch.name)
+                            except KeyError:
+                                dict1['unsynced_branches'][repo_path]=[]
+                                dict1['unsynced_branches'][repo_path].append(branch.name)
+                    except ValueError:
                         try:
-                            dict1['unsynced_branches'][repo_path].append(branch.name)
+                            dict1['missing_remote_branches'][repo_path].append(branch.name)
                         except KeyError:
-                            dict1['unsynced_branches'][repo_path]=[]
-                            dict1['unsynced_branches'][repo_path].append(branch.name)
+                            dict1['missing_remote_branches'][repo_path]=[]
+                            dict1['missing_remote_branches'][repo_path].append(branch.name)
+
                 else:
                     try:
                         dict1['missing_remote_branches'][repo_path].append(branch.name)
