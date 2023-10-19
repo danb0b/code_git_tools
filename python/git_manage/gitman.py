@@ -91,28 +91,20 @@ if __name__=='__main__':
 
     index_cache_path = clean_path(config['index_cache'])
         
-    if ((args.command == 'index') or (args.command == 'list') or (not args.no_index) or (not os.path.exists(index_cache_path))):
-        git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
-        with open(index_cache_path,'w') as f:
-            yaml.dump(git_list,f)
-        s=yaml.dump(git_list)
-
-    with open(index_cache_path) as f:
-        git_list=yaml.load(f,Loader=yaml.Loader)
-
     # print('Excluded Paths:', str(exclude_mod))
 
 
     if args.command == 'pull':
-        # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
+
+        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
         git_list = git_tools.fetch(git_list,args.verbose)
         git_tools.check_unmatched(git_list,args.verbose)
 
     elif args.command == 'status':
         
-        # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
-    
-        # git_list2,dirty,no_path = git_tools.check_dirty(git_list,args.verbose)
+        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
         dict1 = git_tools.check_dirty(git_list,args.verbose)
         if args.verbose:
             s = yaml.dump(dict1)
@@ -130,14 +122,17 @@ if __name__=='__main__':
             # print(item,e)
         
     elif args.command in ['branch-status','bs','branch_status']:
-        # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
+
+        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
         dict1 = git_tools.check_unmatched(git_list,args.verbose)
         del dict1['missing_local_branches']
         s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['find-remote-branches']:
-        # git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude_mod)
+        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
         dict1 = git_tools.check_unmatched(git_list,args.verbose)
         s = yaml.dump(dict1['missing_local_branches'])
         print(s)
@@ -221,23 +216,36 @@ if __name__=='__main__':
 
     elif args.command == 'reset':
 
-        #git_list = git_tools.find_repos(p1,search_depth = config.index_depth,exclude=exclude_mod)
+        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
         git_tools.reset_branches(git_list)
 
     elif args.command == 'list-active-branch':
 
+        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
         current_branch = git_tools.get_current_branch(git_list)
         s = yaml.dump(current_branch)
         print(s)
+    
     elif args.command == 'index':
+    
+        git_list = git_tools.index_git_list(True,index_cache_path,config['index_depth'],exclude_mod)
         if args.verbose:
+            s = yaml.dump(git_list)
             print(s)
+
     elif args.command == 'list':
+        git_list = git_tools.index_git_list(True,index_cache_path,config['index_depth'],exclude_mod)
+        s = yaml.dump(git_list)
         print(s)
+
     elif args.command == 'exclude':
+    
         path = clean_path(os.curdir)
         config['exclude_local'].append(path)
         print(path)
+    
     else:
         raise(Exception('command does not exist'))        
         

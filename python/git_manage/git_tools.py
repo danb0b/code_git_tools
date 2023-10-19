@@ -11,6 +11,17 @@ import git
 from github import Github
 import yaml
 
+def index_git_list(force_index,index_cache_path,index_depth,exclude):
+    if (force_index) or (not os.path.exists(index_cache_path)):
+        git_list = find_repos(p1,search_depth = index_depth,exclude=exclude)
+        with open(index_cache_path,'w') as f:
+            yaml.dump(git_list,f)
+    else:
+        with open(index_cache_path) as f:
+            git_list=yaml.load(f,Loader=yaml.Loader)
+    return git_list
+
+
 def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,verbose=True):
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
         os.mkdir(repo_path)
