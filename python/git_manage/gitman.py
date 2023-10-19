@@ -96,14 +96,14 @@ if __name__=='__main__':
 
     if args.command == 'pull':
 
-        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
 
         git_list = git_tools.fetch(git_list,args.verbose)
         git_tools.check_unmatched(git_list,args.verbose)
 
     elif args.command == 'status':
         
-        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = git_tools.check_dirty(git_list,args.verbose)
         if args.verbose:
@@ -123,7 +123,7 @@ if __name__=='__main__':
         
     elif args.command in ['branch-status','bs','branch_status']:
 
-        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = git_tools.check_unmatched(git_list,args.verbose)
         del dict1['missing_local_branches']
@@ -131,7 +131,7 @@ if __name__=='__main__':
         print(s)
 
     elif args.command in ['find-remote-branches']:
-        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = git_tools.check_unmatched(git_list,args.verbose)
         s = yaml.dump(dict1['missing_local_branches'])
@@ -216,13 +216,13 @@ if __name__=='__main__':
 
     elif args.command == 'reset':
 
-        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
 
         git_tools.reset_branches(git_list)
 
     elif args.command == 'list-active-branch':
 
-        git_list = git_tools.index_git_list(not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
 
         current_branch = git_tools.get_current_branch(git_list)
         s = yaml.dump(current_branch)
@@ -230,13 +230,13 @@ if __name__=='__main__':
     
     elif args.command == 'index':
     
-        git_list = git_tools.index_git_list(True,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,True,index_cache_path,config['index_depth'],exclude_mod)
         if args.verbose:
             s = yaml.dump(git_list)
             print(s)
 
     elif args.command == 'list':
-        git_list = git_tools.index_git_list(True,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = git_tools.index_git_list(p1,True,index_cache_path,config['index_depth'],exclude_mod)
         s = yaml.dump(git_list)
         print(s)
 

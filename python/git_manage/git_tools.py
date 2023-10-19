@@ -11,7 +11,7 @@ import git
 from github import Github
 import yaml
 
-def index_git_list(force_index,index_cache_path,index_depth,exclude):
+def index_git_list(p1,force_index,index_cache_path,index_depth,exclude):
     if (force_index) or (not os.path.exists(index_cache_path)):
         git_list = find_repos(p1,search_depth = index_depth,exclude=exclude)
         with open(index_cache_path,'w') as f:
