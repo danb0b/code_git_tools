@@ -198,6 +198,25 @@ def clone_list(repo_addresses,full_path,owners,user):
 
         repo = Repo.clone_from(url,local_dest)
 
+def list_remotes(git_list,verbose=False):
+
+    dict1={}
+
+    ll = len(git_list)
+    for ii,item in enumerate(git_list):
+        if verbose:
+            print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
+        try:
+            repo = Repo(item)
+            remotes = repo.remotes
+            remote_urls = [item for remote in remotes for item in remote.urls]
+            dict1[item]=remote_urls
+        except git.NoSuchPathError as e:        
+            print(e)
+    return dict1
+
+
+
 def check_dirty(git_list,verbose=False):    
     
     dict1 = {}

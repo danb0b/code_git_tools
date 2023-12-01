@@ -137,6 +137,13 @@ if __name__=='__main__':
         s = yaml.dump(dict1['missing_local_branches'])
         print(s)
         
+    elif args.command in ['list-remotes']:
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
+        dict1 = git_tools.list_remotes(git_list,args.verbose)
+        s = yaml.dump(dict1)
+        print(s)
+        
     elif args.command == 'clone':
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
 
