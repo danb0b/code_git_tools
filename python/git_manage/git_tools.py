@@ -209,13 +209,45 @@ def list_remotes(git_list,verbose=False):
         try:
             repo = Repo(item)
             remotes = repo.remotes
-            remote_urls = [item for remote in remotes for item in remote.urls]
+            remote_urls = dict([(remote.name,[url for url in remote.urls]) for remote in remotes])
             dict1[item]=remote_urls
         except git.NoSuchPathError as e:        
             print(e)
     return dict1
 
+def list_upstream(git_list,verbose=False):
 
+    dict1={}
+
+    ll = len(git_list)
+    for ii,item in enumerate(git_list):
+        if verbose:
+            print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
+        try:
+            repo = Repo(item)
+            branches = repo.branches
+            tracking_branches = dict([(branch.name,branch.tracking_branch().path) for branch in repo.branches])
+            dict1[item]=tracking_branches
+        except git.NoSuchPathError as e:        
+            print(e)
+    return dict1
+
+def list_local_branches(git_list,verbose=False):
+
+    dict1={}
+
+    ll = len(git_list)
+    for ii,item in enumerate(git_list):
+        if verbose:
+            print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
+        try:
+            repo = Repo(item)
+            branches = repo.branches
+            branch_names= [branch.name for branch in branches]
+            dict1[item]=branch_names
+        except git.NoSuchPathError as e:        
+            print(e)
+    return dict1
 
 def check_dirty(git_list,verbose=False):    
     

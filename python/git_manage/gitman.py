@@ -18,9 +18,12 @@ exclude,
 find-remote-branches,
 index,
 list, 
-list-remote,
-list-remote-only,
+list-github,
+list-remotes,
+list-github-nonlocal,
 list-active-branch,
+list-upstream,
+list-local-branches,
 pull,
 reset,
 status,
@@ -143,7 +146,21 @@ if __name__=='__main__':
         dict1 = git_tools.list_remotes(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
-        
+
+    elif args.command in ['list-upstream']:
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
+        dict1 = git_tools.list_upstream(git_list,args.verbose)
+        s = yaml.dump(dict1)
+        print(s)
+
+    elif args.command in ['list-local-branches']:
+        git_list = git_tools.index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+
+        dict1 = git_tools.list_local_branches(git_list,args.verbose)
+        s = yaml.dump(dict1)
+        print(s)
+
     elif args.command == 'clone':
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
 
@@ -164,7 +181,7 @@ if __name__=='__main__':
             token = config['github_accounts'][args.user]
             git_tools.retrieve_nonlocal_repos(git_list,clean_path(config['clone_path']), user=args.user,token = token,exclude_remote=config['exclude_remote'],verbose = args.verbose)    
 
-    elif (args.command == 'list-remote'):
+    elif (args.command == 'list-github'):
         all_users = {}
         if args.user=='all':
             for user,token in config['github_accounts'].items():
@@ -189,7 +206,7 @@ if __name__=='__main__':
         
         print(yaml.dump(all_users))
 
-    elif (args.command == 'list-remote-only'):
+    elif (args.command == 'list-github-nonlocal'):
 
         git_list = git_tools.find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
 
