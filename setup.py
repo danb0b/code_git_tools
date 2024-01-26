@@ -25,7 +25,7 @@ package_data['git_manage'].append('support/config.yaml')
 
 setup_kwargs = {}
 setup_kwargs['name']='git_manage'
-setup_kwargs['version']='0.0.5'
+setup_kwargs['version']='0.0.7'
 setup_kwargs['classifiers']=['Programming Language :: Python','Programming Language :: Python :: 3']   
 setup_kwargs['description']='Git Management Tools are a collection of tools for making it easier to manage 100+ local repos'
 setup_kwargs['author']='Dan Aukes'
@@ -36,5 +36,6 @@ setup_kwargs['packages']=packages
 setup_kwargs['package_dir']={'git_manage' : 'python/git_manage'}
 setup_kwargs['package_data'] = package_data
 setup_kwargs['install_requires']=['pygithub','gitpython','pyyaml']
+setup_kwargs['scripts'] = ['python/git_manage/gitman']
   
 setup(**setup_kwargs)
