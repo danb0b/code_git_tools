@@ -1,21 +1,17 @@
+archive_path: 
+- ~/repositories/dormant
+- ~/code_external
+clone_path: ~/repositories
 exclude_local:
-  - trash:///
-  - ~/.local/share/Trash
-  - ~/.arduino15
-  - ~/.arduino
-  - ~/Desktop
-  - ~/Downloads
-  - ~/Dropbox (ASU)/code_external
-  - ~/Arizona State University
-  - ~/cloud
-  - ~/nas
-exclude_remote:
-  - my_repository_name
+- trash:///
+- ~/.local/share/Trash
+- ~/.arduino15
+- ~/.arduino
+- ~/Desktop
+- ~/Downloads
+- ~/.wine
+exclude_remote: []
+github_accounts: {}
+index_cache: ~/repositories.yaml
 index_depth: 5
 index_location: '~'
-clone_path: '~/repositories'
-archive_path: 
-- '~/repositories/dormant'
-index_cache: '~/repositories.yaml'
-github_accounts:
-  dummy: 012345
