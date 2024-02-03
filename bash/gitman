@@ -32,13 +32,14 @@ status,
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('command',metavar='command',type=str,help=command_string, default = '')
     parser.add_argument('--config',dest='config_f',default = None)
     parser.add_argument('--token',dest='token',default = None)
     parser.add_argument('-n','--no-index',dest='no_index',action='store_true', default = False)
     parser.add_argument('-v','--verbose',dest='verbose',action='store_true', default = False)
     parser.add_argument('-u','--user',dest='user',default = 'all')
     parser.add_argument('--update-config',dest='save_config',action='store_true',help='re-save the config file with the current configuration',default=False)
+    parser.add_argument('command',metavar='command',type=str,help=command_string, default = '')
+    parser.add_argument('-r','--repo',dest='repo',type=str, default = None)
     
     args = parser.parse_args()
     
