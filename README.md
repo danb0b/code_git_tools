@@ -16,8 +16,6 @@ pip install git_manage
 
 This will install the git_manage package as well as the ```gitman``` script
 
-##
-
 ## Configuration
 
 These instructions assume you may have more than one github account.  For each github account,
@@ -28,8 +26,7 @@ These instructions assume you may have more than one github account.  For each g
         1. generate new token (classic) for general use
         1. set to the expiration of your preference.  
             1. check the following
-                1. repo:status
-                1. public_repo
+                1. repo(checks all)
         1. copy the resulting api key and save somewhere safe.
 
 1. Create a SSH key for each account

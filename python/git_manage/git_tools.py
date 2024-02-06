@@ -73,14 +73,14 @@ def process_command(args):
 
     if args.command == 'pull':
 
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         git_list = fetch(git_list,args.verbose)
         check_unmatched(git_list,args.verbose)
 
     elif args.command == 'status':
         
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = check_dirty(git_list,args.verbose)
         if args.verbose:
@@ -100,7 +100,7 @@ def process_command(args):
         
     elif args.command in ['branch-status','bs','branch_status']:
 
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = check_unmatched(git_list,args.verbose)
         del dict1['missing_local_branches']
@@ -108,28 +108,28 @@ def process_command(args):
         print(s)
 
     elif args.command in ['find-remote-branches']:
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = check_unmatched(git_list,args.verbose)
         s = yaml.dump(dict1['missing_local_branches'])
         print(s)
         
     elif args.command in ['list-remotes']:
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = list_remotes(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['list-upstream']:
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = list_upstream(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['list-local-branches']:
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         dict1 = list_local_branches(git_list,args.verbose)
         s = yaml.dump(dict1)
@@ -226,13 +226,13 @@ def process_command(args):
 
     elif args.command == 'reset':
 
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         reset_branches(git_list)
 
     elif args.command == 'list-active-branch':
 
-        git_list = index_git_list(p1,not args.no_index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
 
         current_branch = get_current_branch(git_list)
         s = yaml.dump(current_branch)
