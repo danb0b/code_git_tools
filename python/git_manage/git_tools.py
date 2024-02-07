@@ -51,6 +51,8 @@ def process_command(args):
     exclude_mod.extend([gm.clean_path(item) for item in config['archive_path']])
 
     index_cache_path = gm.clean_path(config['index_cache'])
+
+    depth = int(args.depth)
         
     if args.config_f is None:
         config_save_path = gm.personal_config_path
@@ -64,21 +66,21 @@ def process_command(args):
 
     if args.command in ['fetch']:
 
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         git_list = fetch_pull(git_list,attr='fetch',verbose = args.verbose,all=True)
         check_unmatched(git_list,args.verbose)
 
     elif args.command in ['pull']:
 
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         git_list = fetch_pull(git_list,attr='pull',verbose = args.verbose,all=True)
         check_unmatched(git_list,args.verbose)
 
     elif args.command in ['status']:
         
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         dirty = list_dirty(git_list,args.verbose)
         s = yaml.dump(dirty)
@@ -86,35 +88,35 @@ def process_command(args):
 
     elif args.command in ['branch-status']:
 
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         dict1 = check_unmatched(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['list-nonlocal-branches']:
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         dict1 = list_missing_local_branches(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
         
     elif args.command in ['list-remotes']:
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         dict1 = list_remotes(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['list-upstream']:
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         dict1 = list_upstream(git_list,args.verbose)
         s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['list-local-branches']:
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         dict1 = list_local_branches(git_list,args.verbose)
         s = yaml.dump(dict1)
@@ -122,7 +124,7 @@ def process_command(args):
 
     elif args.command in ['clone']:
         if args.repo is None:
-            git_list = find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
+            git_list = find_repos(p1,search_depth = depth,exclude=exclude)
             
 
             if args.user=='all':
@@ -177,7 +179,7 @@ def process_command(args):
 
     elif (args.command == 'list-github-nonlocal'):
 
-        git_list = find_repos(p1,search_depth = config['index_depth'],exclude=exclude)
+        git_list = find_repos(p1,search_depth = depth,exclude=exclude)
 
         # all_users = {}
         all_repos = []
@@ -209,13 +211,13 @@ def process_command(args):
 
     elif args.command == 'hard-reset':
 
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         hard_reset_repos(git_list)
 
     elif args.command == 'list-active-branch':
 
-        git_list = index_git_list(p1,args.index,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
         current_branch = list_active_branches(git_list)
         s = yaml.dump(current_branch)
@@ -223,13 +225,13 @@ def process_command(args):
     
     elif args.command == 'index':
     
-        git_list = index_git_list(p1,True,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,True,index_cache_path,depth,exclude_mod)
         if args.verbose:
             s = yaml.dump(git_list)
             print(s)
 
     elif args.command == 'list':
-        git_list = index_git_list(p1,True,index_cache_path,config['index_depth'],exclude_mod)
+        git_list = index_git_list(p1,True,index_cache_path,depth,exclude_mod)
         s = yaml.dump(git_list)
         print(s)
 
@@ -274,9 +276,29 @@ def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,
     
     clone_list(remaining,repo_path,owners,user)    
 
-def list_nonlocal_repos(git_list,user,token,verbose=False):
-    gits_remote_formatted,owners,owner_repo_dict = list_remote_repos(user, token,verbose,format_local=True)
-    nonlocal_github_urls=diff(git_list,gits_remote_formatted)
+def list_nonlocal_repos(local,user,token,verbose=False):
+    github,owners,owner_repo_dict = list_remote_repos(user, token,verbose,format_local=True)
+
+    local_dict = {}
+    local_urls = []
+    for ii,item in enumerate(local):
+    
+        try:
+            urls = []
+            
+            repo = Repo(item)
+            for r in repo.remotes:
+                urls.extend(r.urls)
+            local_dict[item] = urls
+            local_urls.extend(urls)
+        except:
+            pass        
+    
+    local_urls = set(local_urls)
+    github_urls = set(github)
+    
+    nonlocal_github_urls =  list(github_urls-local_urls)
+
     return nonlocal_github_urls,owners,owner_repo_dict
 
 def list_remote_repos(user,token,verbose=False,format_local=False):
@@ -304,28 +326,6 @@ def scan_github(token):
             owner_repo_dict[repo.owner.login] = []
             owner_repo_dict[repo.owner.login].append(repo.clone_url)
     return all_gits,owners,owner_repo_dict
-
-def diff(local,github):    
-    local_dict = {}
-    local_urls = []
-    for ii,item in enumerate(local):
-    
-        try:
-            urls = []
-            
-            repo = Repo(item)
-            for r in repo.remotes:
-                urls.extend(r.urls)
-            local_dict[item] = urls
-            local_urls.extend(urls)
-        except:
-            pass        
-    
-    local_urls = set(local_urls)
-    github_urls = set(github)
-    
-    nonlocal_github_urls =  list(github_urls-local_urls)
-    return nonlocal_github_urls
 
 def find_repos(search_path=None,search_depth=5,exclude=None):
     search_path = search_path or os.path.abspath(os.path.expanduser('~'))
@@ -496,7 +496,7 @@ def get_active_branch(item,dict1):
 def list_missing_local_branches(git_list,verbose=False):
     return list_x(get_missing_local_branches,git_list,verbose)
 
-def list_remotes(git_list,verbose=False):
+def list_dirty(git_list,verbose=False):
     return list_x(get_dirty,git_list,verbose)
 
 def list_remotes(git_list,verbose=False):

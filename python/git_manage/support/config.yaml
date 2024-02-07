@@ -13,5 +13,4 @@ exclude_local:
 exclude_remote: []
 github_accounts: {}
 index_cache: ~/repositories.yaml
-index_depth: 5
 index_location: '~'
