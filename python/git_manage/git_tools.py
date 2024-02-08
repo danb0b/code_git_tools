@@ -82,8 +82,8 @@ def process_command(args):
         
         git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
-        dirty = list_dirty(git_list,args.verbose)
-        s = yaml.dump(dirty)
+        dict1 = list_dirty(git_list,args.verbose)
+        s = yaml.dump(dict1)
         print(s)
 
     elif args.command in ['branch-status']:
@@ -420,7 +420,7 @@ def list_x(get_x,git_list,verbose=False):
         if verbose:
             print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
         try:
-            get_x(item,dict1)
+            dict1 = get_x(item,dict1)
         except git.NoSuchPathError as e:        
             print(e)
         except git.GitCommandError as e:        
@@ -462,36 +462,44 @@ def get_missing_local_branches(repo_path,dict1):
     b_s = set(b_s)
     not_local = list(remote_branches_s.difference(b_s))
     dict1[repo_path]=not_local
+    return dict1
 
 
 def get_dirty(item,dict1):
-    dirty = []
     repo = Repo(item)
     if repo.is_dirty(untracked_files=True):
-        dirty.append(item)
-    dict1['dirty'] = dirty
+        try:
+            dict1['dirty'].append(item)
+        except KeyError:
+            dict1['dirty']=[]
+            dict1['dirty'].append(item)
+    return dict1
 
 def get_remotes(item,dict1):
     repo = Repo(item)
     remotes = repo.remotes
     remote_urls = dict([(remote.name,[url for url in remote.urls]) for remote in remotes])
     dict1[item]=remote_urls
+    return dict1
 
 def get_upstream(item,dict1):
     repo = Repo(item)
     branches = repo.branches
     tracking_branches = dict([(branch.name,branch.tracking_branch().path) for branch in repo.branches])
     dict1[item]=tracking_branches
+    return dict1
 
 def get_local_branches(item,dict1):
     repo = Repo(item)
     branches = repo.branches
     branch_names= [branch.name for branch in branches]
     dict1[item]=branch_names
+    return dict1
 
 def get_active_branch(item,dict1):
     repo = Repo(item)
     dict1[item]=str(repo.active_branch)
+    return dict1
 
 def list_missing_local_branches(git_list,verbose=False):
     return list_x(get_missing_local_branches,git_list,verbose)
