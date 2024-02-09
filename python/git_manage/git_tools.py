@@ -465,11 +465,13 @@ def get_missing_local_branches(repo_path,dict1):
 
 
 def get_dirty(item,dict1):
-    dirty = []
     repo = Repo(item)
     if repo.is_dirty(untracked_files=True):
-        dirty.append(item)
-    dict1['dirty'] = dirty
+        try:
+            dict1['dirty'].append(item)
+        except KeyError:
+            dict1['dirty']=[]
+            dict1['dirty'].append(item)
 
 def get_remotes(item,dict1):
     repo = Repo(item)
