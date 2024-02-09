@@ -11,7 +11,7 @@ import git
 from github import Github
 import yaml
 import sys
-import git_manage.url as url
+import git_manage.url as gmu
 import git_manage as gm
 
 
@@ -82,8 +82,8 @@ def process_command(args):
         
         git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
 
-        dict1 = list_dirty(git_list,args.verbose)
-        s = yaml.dump(dict1)
+        dirty = list_dirty(git_list,args.verbose)
+        s = yaml.dump(dirty)
         print(s)
 
     elif args.command in ['branch-status']:
@@ -148,7 +148,7 @@ def process_command(args):
             for user,token in config['github_accounts'].items():
                 git_list,owners,owner_repo_dict = list_remote_repos(user=user,token = token)
                 if args.repo in owners:
-                    repo_list = [url.local_ssh_from_url_user(args.repo, user)]
+                    repo_list = [gmu.local_ssh_from_url_user(args.repo, user)]
                     clone_list(repo_list,gm.clean_path(config['clone_path']),owners,user)    
 
 
@@ -206,7 +206,7 @@ def process_command(args):
             # all_users[args.user]=owner_repo_dict
             all_repos.extend(local_git_list)
 
-        all_repos = [url.remote_url_from_ssh_address(item) for item in all_repos]        
+        all_repos = [gmu.remote_url_from_ssh_address(item) for item in all_repos]        
         print(yaml.dump(all_repos))
 
     elif args.command == 'hard-reset':
@@ -306,7 +306,7 @@ def list_remote_repos(user,token,verbose=False,format_local=False):
     if verbose:
         print('remote gits: ', gits_remote)
     if format_local:
-        gits_remote = [url.local_ssh_from_url_user(item, user) for item in gits_remote]
+        gits_remote = [gmu.local_ssh_from_url_user(item, user) for item in gits_remote]
     return gits_remote,owners,owner_repo_dict
 
 def scan_github(token):
@@ -368,18 +368,18 @@ def find_repos(search_path=None,search_depth=5,exclude=None):
 def format_repo_list(list_in,destination_format='github',user=None):
     list_out = []
     for item in list_in:
-        if url.is_ssh_format(item):
+        if gmu.is_ssh_format(item):
             if destination_format=='github':
-                list_out.append(url.remote_url_from_ssh_address(item))
+                list_out.append(gmu.remote_url_from_ssh_address(item))
             elif destination_format=='ssh':
                 list_out.append(item)
             else:
                 raise(Exception('format not specified'))
-        elif url.is_github_clone_format(item):
+        elif gmu.is_github_clone_format(item):
             if destination_format=='github':
                 list_out.append(item)
             elif destination_format=='ssh':
-                list_out.append(url.local_ssh_from_url_user(item, user))                
+                list_out.append(gmu.local_ssh_from_url_user(item, user))                
             else:
                 raise(Exception('format not specified'))
         else:
@@ -390,7 +390,7 @@ def format_repo_list(list_in,destination_format='github',user=None):
     
 
 def clone_list(repo_addresses,full_path,owners,user):
-    owners2 = dict([(url.local_ssh_from_url_user(url, user),owners[url]) for url in owners.keys()])
+    owners2 = dict([(gmu.local_ssh_from_url_user(url, user),owners[url]) for url in owners.keys()])
     for url in repo_addresses:
         reponame = (url.split('/')[-1])
         name=reponame.split('.')
@@ -420,7 +420,7 @@ def list_x(get_x,git_list,verbose=False):
         if verbose:
             print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
         try:
-            dict1 = get_x(item,dict1)
+            get_x(item,dict1)
         except git.NoSuchPathError as e:        
             print(e)
         except git.GitCommandError as e:        
@@ -462,44 +462,36 @@ def get_missing_local_branches(repo_path,dict1):
     b_s = set(b_s)
     not_local = list(remote_branches_s.difference(b_s))
     dict1[repo_path]=not_local
-    return dict1
 
 
 def get_dirty(item,dict1):
+    dirty = []
     repo = Repo(item)
     if repo.is_dirty(untracked_files=True):
-        try:
-            dict1['dirty'].append(item)
-        except KeyError:
-            dict1['dirty']=[]
-            dict1['dirty'].append(item)
-    return dict1
+        dirty.append(item)
+    dict1['dirty'] = dirty
 
 def get_remotes(item,dict1):
     repo = Repo(item)
     remotes = repo.remotes
     remote_urls = dict([(remote.name,[url for url in remote.urls]) for remote in remotes])
     dict1[item]=remote_urls
-    return dict1
 
 def get_upstream(item,dict1):
     repo = Repo(item)
     branches = repo.branches
     tracking_branches = dict([(branch.name,branch.tracking_branch().path) for branch in repo.branches])
     dict1[item]=tracking_branches
-    return dict1
 
 def get_local_branches(item,dict1):
     repo = Repo(item)
     branches = repo.branches
     branch_names= [branch.name for branch in branches]
     dict1[item]=branch_names
-    return dict1
 
 def get_active_branch(item,dict1):
     repo = Repo(item)
     dict1[item]=str(repo.active_branch)
-    return dict1
 
 def list_missing_local_branches(git_list,verbose=False):
     return list_x(get_missing_local_branches,git_list,verbose)
