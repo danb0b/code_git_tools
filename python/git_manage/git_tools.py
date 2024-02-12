@@ -52,7 +52,9 @@ def process_command(args):
 
     index_cache_path = gm.clean_path(config['index_cache'])
 
-    depth = int(args.depth)
+    depth = config['index_depth']
+    if args.depth is not None:
+        depth = int(args.depth)
         
     if args.config_f is None:
         config_save_path = gm.personal_config_path
@@ -265,7 +267,7 @@ def index_git_list(p1,force_index,index_cache_path,index_depth,exclude):
 
 def retrieve_nonlocal_repos(git_list,repo_path,user,token,exclude_remote = None,verbose=True):
     if not (os.path.exists(repo_path) and os.path.isdir(repo_path)):
-        os.mkdir(repo_path)
+        os.makedirs(repo_path)
 
     if verbose:
         print('local gits: ', git_list)
@@ -398,11 +400,11 @@ def clone_list(repo_addresses,full_path,owners,user):
         
         owner = owners2[url]
         ii = 1
-        local_dest = os.path.normpath(os.path.join(full_path,owner,name))
+        local_dest = os.path.normpath(os.path.join(full_path,user,owner,name))
         
         while (os.path.exists(local_dest) and os.path.isdir(local_dest)):
             name = name+'_'+str(ii)
-            local_dest = os.path.normpath(os.path.join(full_path,owner,name))
+            local_dest = os.path.normpath(os.path.join(full_path,user,owner,name))
             ii+=1
         os.makedirs(local_dest)
             
