@@ -52,9 +52,10 @@ def process_command(args):
 
     index_cache_path = gm.clean_path(config['index_cache'])
 
-    depth = config['index_depth']
     if args.depth is not None:
-        depth = int(args.depth)
+        config['index_depth'] = int(args.depth)
+
+    depth = config['index_depth']
         
     if args.config_f is None:
         config_save_path = gm.personal_config_path
