@@ -1,16 +1,10 @@
-archive_path: 
-- ~/repositories/dormant
-- ~/code_external
-clone_path: ~/repositories
-exclude_local:
-- trash:///
-- ~/.local/share/Trash
-- ~/.arduino15
-- ~/.arduino
-- ~/Desktop
-- ~/Downloads
-- ~/.wine
+archive_path:
+- ~/repos/archive
+- ~/repos/external
+clone_path: ~/repos/users
+exclude_local: []
 exclude_remote: []
-github_accounts: {}
-index_cache: ~/repositories.yaml
-index_location: '~'
+github_accounts: []
+index_cache: ~/.repositories.yaml
+index_depth: 6
+index_location: '~/repos'
