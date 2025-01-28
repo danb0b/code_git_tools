@@ -570,6 +570,7 @@ def check_unmatched(git_list,verbose=False):
     dict1['no_path'] = []
     dict1['missing_remote_branches'] = {}
     dict1['unsynced_branches'] = {}
+    dict1['missing remote'] = []
 
     ll = len(git_list)
     for ii,repo_path in enumerate(git_list):
@@ -579,10 +580,16 @@ def check_unmatched(git_list,verbose=False):
             r = Repo(repo_path)
             
             remote_branches = []
-            for rr in r.remote().refs:
-                if not rr.name.lower().endswith('/head'):
-                    remote_branches.append(rr)
-            remote_branches_s = set(remote_branches)
+            try:
+
+                for rr in r.remote().refs:
+                    if not rr.name.lower().endswith('/head'):
+                        remote_branches.append(rr)
+
+                remote_branches_s = set(remote_branches)
+
+            except ValueError as ex: 
+                dict1['missing remote'].append(repo_path)
             
             
             for branch in r.branches:
