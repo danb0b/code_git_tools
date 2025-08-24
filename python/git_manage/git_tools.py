@@ -26,6 +26,8 @@ def new_user():
 def process_command(args):
     internal_save_flag = False
 
+    # if args.verbose: print('verbose 2')
+
     potential_file_locations = [args.config_f,gm.personal_config_path,gm.package_config_path]
     potential_file_locations = [item for item in potential_file_locations if item is not None]
 
@@ -75,8 +77,12 @@ def process_command(args):
         check_unmatched(git_list,args.verbose)
 
     elif args.command in ['pull']:
+        # print('listing')
+        # if args.verbose: print('verbose 3')
 
         git_list = index_git_list(p1,args.index,index_cache_path,depth,exclude_mod)
+        # print('pulling')
+        # if args.verbose: print('verbose 4')
 
         git_list = fetch_pull(git_list,attr='pull',verbose = args.verbose,all=True)
         check_unmatched(git_list,args.verbose)
@@ -525,6 +531,8 @@ def fetch_pull(git_list,attr,verbose = False,all=True):
     git_command_errors = {}
     git_list2 = []
 
+    # if verbose: print('verbose 5')
+
     ll = len(git_list)
     for ii,item in enumerate(git_list):
         print('{0:.0f}/{1:.0f}'.format(ii+1,ll),item)
@@ -591,11 +599,14 @@ def check_unmatched(git_list,verbose=False):
             except ValueError as ex: 
                 dict1['missing remote'].append(repo_path)
             
-            
             for branch in r.branches:
-                if branch.tracking_branch() is not None:
+                tb = branch.tracking_branch()
+                bc = branch.commit
+                # print(tb.name)
+                tbc = tb.commit
+                if tb is not None:
                     try:
-                        if branch.commit.hexsha != branch.tracking_branch().commit.hexsha:
+                        if bc.hexsha != tbc.hexsha:
                             try:
                                 dict1['unsynced_branches'][repo_path].append(branch.name)
                             except KeyError:
