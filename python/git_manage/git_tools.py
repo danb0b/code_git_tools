@@ -603,9 +603,9 @@ def check_unmatched(git_list,verbose=False):
                 tb = branch.tracking_branch()
                 bc = branch.commit
                 # print(tb.name)
-                tbc = tb.commit
                 if tb is not None:
                     try:
+                        tbc = tb.commit
                         if bc.hexsha != tbc.hexsha:
                             try:
                                 dict1['unsynced_branches'][repo_path].append(branch.name)
@@ -676,3 +676,4 @@ if __name__=='__main__':
     # r = get_all_repos()
     pass
     
+
